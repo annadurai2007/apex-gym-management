@@ -116,11 +116,11 @@
         <div class="topbar-right">
           <!-- Audio Toggle -->
           <button class="sound-toggle-btn" onclick="SoundFX.toggle()" title="Toggle Sound FX">
-            <i data-lucide="volume-2" style="width: 14px; height: 14px;"></i> Audio: On
+            <i data-lucide="volume-2" style="width: 14px; height: 14px;"></i> <span class="sound-btn-text">Audio: On</span>
           </button>
 
           <!-- Command Palette Trigger -->
-          <button class="btn btn-secondary btn-sm" onclick="CommandPalette.open()" title="Command Palette (Ctrl+K)">
+          <button class="btn btn-secondary btn-sm cmd-palette-btn" onclick="CommandPalette.open()" title="Command Palette (Ctrl+K)">
             <i data-lucide="terminal" style="width: 14px; height: 14px;"></i> <span class="palette-kbd-shortcut">Ctrl+K</span>
           </button>
 
@@ -251,7 +251,7 @@
           </div>
 
           <!-- Recent Activity & Expiring Alerts Grid -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+          <div class="dashboard-grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
             <div class="card">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h3 style="font-size: 1.1rem; color: #FFF;">Recent Registrations</h3>
@@ -989,7 +989,7 @@
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <div class="dashboard-grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
             <div class="card">
               <h3 style="font-size: 1.1rem; color: #FFF; margin-bottom: 16px;">Revenue by Payment Method</h3>
               <div class="table-responsive">

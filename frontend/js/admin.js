@@ -143,7 +143,7 @@ function switchView(viewName) {
   // Auto-close mobile drawer on view switch
   const sidebar = document.getElementById('main-sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
-  if (sidebar && window.innerWidth <= 768) {
+  if (sidebar && window.innerWidth <= 1024) {
     sidebar.classList.remove('mobile-open');
     backdrop?.classList.remove('active');
   }

@@ -58,7 +58,7 @@ function switchMemberTab(tabName) {
   // Auto-close mobile drawer on tab switch
   const sidebar = document.getElementById('main-sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
-  if (sidebar && window.innerWidth <= 768) {
+  if (sidebar && window.innerWidth <= 1024) {
     sidebar.classList.remove('mobile-open');
     backdrop?.classList.remove('active');
   }
@@ -283,7 +283,7 @@ async function loadMemberDiets() {
         <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 24px;">${d.description || ''}</p>
 
         <!-- Macros Grid -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px;">
+        <div class="macros-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px;">
           <div style="background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-subtle);">
             <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Calories</div>
             <div style="font-size: 1.6rem; font-weight: 800; color: #FFF; font-family: var(--font-heading);">${d.calorie_target}</div>

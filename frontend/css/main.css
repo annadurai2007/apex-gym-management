@@ -261,6 +261,9 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-lg);
   padding: 24px;
   position: relative;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
