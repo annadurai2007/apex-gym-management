@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Console — Executive Management Suite</title>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- QR Code Engine & Scanner -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="main-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="sidebar-brand">
+          <div class="sidebar-brand-icon">A</div>
+          <div class="sidebar-brand-name">APEX <span>CONSOLE</span></div>
+        </a>
+        <button class="sidebar-toggle-btn" id="sidebar-collapse-btn" title="Toggle Sidebar">
+          <i data-lucide="chevron-left"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-category">Core Operations</div>
+        <a class="nav-item active" data-view="overview">
+          <span class="nav-item-icon"><i data-lucide="layout-dashboard"></i></span>
+          <span class="nav-item-label">Overview</span>
+        </a>
+        <a class="nav-item" data-view="attendance">
+          <span class="nav-item-icon"><i data-lucide="user-check"></i></span>
+          <span class="nav-item-label">Attendance Desk</span>
+        </a>
+        <a class="nav-item" data-view="trainer-attendance">
+          <span class="nav-item-icon"><i data-lucide="qr-code"></i></span>
+          <span class="nav-item-label">Trainer QR Desk</span>
+        </a>
+        <a class="nav-item" data-view="members">
+          <span class="nav-item-icon"><i data-lucide="users"></i></span>
+          <span class="nav-item-label">Members</span>
+        </a>
+        <a class="nav-item" data-view="trainers">
+          <span class="nav-item-icon"><i data-lucide="award"></i></span>
+          <span class="nav-item-label">Trainers</span>
+        </a>
+
+        <div class="nav-category">Subscriptions & Billing</div>
+        <a class="nav-item" data-view="plans">
+          <span class="nav-item-icon"><i data-lucide="shield"></i></span>
+          <span class="nav-item-label">Membership Plans</span>
+        </a>
+        <a class="nav-item" data-view="payments">
+          <span class="nav-item-icon"><i data-lucide="credit-card"></i></span>
+          <span class="nav-item-label">Payments & Dues</span>
+        </a>
+
+        <div class="nav-category">Performance Blueprints</div>
+        <a class="nav-item" data-view="workouts">
+          <span class="nav-item-icon"><i data-lucide="dumbbell"></i></span>
+          <span class="nav-item-label">Workout Routines</span>
+        </a>
+        <a class="nav-item" data-view="diets">
+          <span class="nav-item-icon"><i data-lucide="utensils"></i></span>
+          <span class="nav-item-label">Diet Blueprints</span>
+        </a>
+
+        <div class="nav-category">Analytics & System</div>
+        <a class="nav-item" data-view="reports">
+          <span class="nav-item-icon"><i data-lucide="bar-chart-3"></i></span>
+          <span class="nav-item-label">Reports & Exports</span>
+        </a>
+        <a class="nav-item" data-view="settings">
+          <span class="nav-item-icon"><i data-lucide="settings"></i></span>
+          <span class="nav-item-label">Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-secondary btn-sm" id="admin-logout-btn" style="width: 100%;">
+          <i data-lucide="log-out" style="width: 16px; height: 16px;"></i> <span class="nav-item-label">Log Out</span>
+        </button>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-toggle" id="mobile-sidebar-toggle">
+            <i data-lucide="menu"></i>
+          </button>
+          <h2 class="page-title" id="current-page-title">Executive Dashboard</h2>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Audio Toggle -->
+          <button class="sound-toggle-btn" onclick="SoundFX.toggle()" title="Toggle Sound FX">
+            <i data-lucide="volume-2" style="width: 14px; height: 14px;"></i> Audio: On
+          </button>
+
+          <!-- Command Palette Trigger -->
+          <button class="btn btn-secondary btn-sm" onclick="CommandPalette.open()" title="Command Palette (Ctrl+K)">
+            <i data-lucide="terminal" style="width: 14px; height: 14px;"></i> <span class="palette-kbd-shortcut">Ctrl+K</span>
+          </button>
+
+          <!-- Notification Bell -->
+          <button class="notif-btn" id="notif-bell-btn" title="View Notifications">
+            <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
+            <span class="notif-badge" id="topbar-notif-badge" style="display: none;">0</span>
+          </button>
+
+          <!-- User Profile -->
+          <div class="user-profile-pill">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80" alt="Admin" class="user-pill-avatar">
+            <div>
+              <div class="user-pill-name">Apex Administrator</div>
+              <div class="user-pill-role">Administrator</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Body -->
+      <main class="content-body">
+
+        <!-- ====================================================================
+             1. OVERVIEW DASHBOARD VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-overview">
+          <!-- Metrics Stats Cards -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Total Members</span>
+                <div class="stat-icon"><i data-lucide="users"></i></div>
+              </div>
+              <div class="stat-value" id="stat-total-members">—</div>
+              <div class="stat-meta positive">
+                <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> Active Roster
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Active Memberships</span>
+                <div class="stat-icon"><i data-lucide="shield-check"></i></div>
+              </div>
+              <div class="stat-value" id="stat-active-members" style="color: var(--status-success);">—</div>
+              <div class="stat-meta">Current Active Access</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Today's Attendance</span>
+                <div class="stat-icon"><i data-lucide="user-check"></i></div>
+              </div>
+              <div class="stat-value" id="stat-today-attendance" style="color: var(--accent-primary);">—</div>
+              <div class="stat-meta">Daily check-in volume</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Monthly Revenue</span>
+                <div class="stat-icon"><i data-lucide="dollar-sign"></i></div>
+              </div>
+              <div class="stat-value" id="stat-monthly-rev">—</div>
+              <div class="stat-meta positive">Current Month Ledger</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Pending Dues</span>
+                <div class="stat-icon"><i data-lucide="alert-circle"></i></div>
+              </div>
+              <div class="stat-value" id="stat-pending-dues" style="color: var(--status-warning);">—</div>
+              <div class="stat-meta negative">Action required</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Expiring in 7 Days</span>
+                <div class="stat-icon"><i data-lucide="clock"></i></div>
+              </div>
+              <div class="stat-value" id="stat-expiring-soon" style="color: var(--status-warning);">—</div>
+              <div class="stat-meta">Expiring memberships</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Active Trainers</span>
+                <div class="stat-icon"><i data-lucide="award"></i></div>
+              </div>
+              <div class="stat-value" id="stat-active-trainers">—</div>
+              <div class="stat-meta">Master coaches</div>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3 class="chart-title">Revenue Trajectory ($)</h3>
+                <span class="badge badge-lime">Monthly Analytics</span>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="chart-revenue"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3 class="chart-title">Membership Distribution</h3>
+                <span class="badge badge-info">Active Plans</span>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="chart-plans"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7-Day Attendance Trend -->
+          <div class="chart-card" style="margin-bottom: 32px;">
+            <div class="chart-header">
+              <h3 class="chart-title">Weekly Attendance Trends (Daily Check-Ins)</h3>
+              <span class="badge badge-success">Past 7 Days</span>
+            </div>
+            <div class="chart-canvas-wrapper" style="min-height: 220px;">
+              <canvas id="chart-attendance"></canvas>
+            </div>
+          </div>
+
+          <!-- Recent Activity & Expiring Alerts Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+            <div class="card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 1.1rem; color: #FFF;">Recent Registrations</h3>
+                <button class="btn btn-sm btn-outline" onclick="switchView('members')">View All</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>Member</th><th>Email</th><th>Joined</th><th>Status</th></tr>
+                  </thead>
+                  <tbody id="overview-recent-members"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 1.1rem; color: #FFF;">Expiring Memberships Alert</h3>
+                <span class="badge badge-warning">Next 14 Days</span>
+              </div>
+              <div id="overview-expiring-list"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 style="font-size: 1.1rem; color: #FFF;">Recent Payment Activity</h3>
+              <button class="btn btn-sm btn-outline" onclick="switchView('payments')">Full Ledger</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Invoice No</th><th>Member</th><th>Amount</th><th>Method</th></tr>
+                </thead>
+                <tbody id="overview-recent-payments"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             2. MEMBERS MANAGEMENT VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-members" style="display: none;">
+          <div class="view-toolbar">
+            <div class="toolbar-search">
+              <i data-lucide="search" class="toolbar-search-icon"></i>
+              <input type="text" id="member-search-input" class="form-input" placeholder="Search by name, code, phone, or email...">
+            </div>
+
+            <div class="toolbar-filters">
+              <select id="member-status-filter" class="form-select" style="width: 160px;">
+                <option value="all">All Statuses</option>
+                <option value="active">Active Only</option>
+                <option value="expired">Expired Only</option>
+                <option value="pending">Pending Only</option>
+              </select>
+
+              <button class="btn btn-primary" onclick="openAddMemberModal()">
+                <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Add Member
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Email</th>
+                  <th>Current Plan & Expiry</th>
+                  <th>Trainer</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="members-table-body"></tbody>
+            </table>
+          </div>
+          <div id="members-pagination"></div>
+        </div>
+
+        <!-- ====================================================================
+             3. ATTENDANCE MANAGEMENT VIEW (STUDENTS & MEMBERS)
+             ==================================================================== -->
+        <div class="view-section" id="view-attendance" style="display: none;">
+          <!-- Top Control Header -->
+          <div class="view-toolbar" style="margin-bottom: 24px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-lime">Front Desk Operations</span>
+                <span class="badge badge-outline"><i data-lucide="scan" style="width: 12px; height: 12px;"></i> Smart Student & Member QR</span>
+              </div>
+              <h2 style="font-size: 1.8rem; color: #FFF; margin: 8px 0 4px;">Student & Member Attendance Desk</h2>
+              <p class="text-muted" style="font-size: 0.9rem;">
+                Optical QR scanner, turnstile check-in/out, daily roll-call (Present / Absent), and record editing.
+              </p>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="openMarkAttendanceModal()">
+                <i data-lucide="user-check" style="width: 16px; height: 16px;"></i> Mark Attendance
+              </button>
+              <button class="btn btn-outline" onclick="openMemberBadgesModal()">
+                <i data-lucide="qr-code" style="width: 16px; height: 16px;"></i> Member Badges
+              </button>
+              <button class="btn btn-secondary" onclick="loadAttendanceView()">
+                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Sync Desk
+              </button>
+            </div>
+          </div>
+
+          <!-- Attendance Stats Grid -->
+          <div class="stats-grid" style="margin-bottom: 28px;">
+            <div class="stat-card" style="border-left: 3px solid var(--accent-primary);">
+              <div class="stat-header">
+                <span class="stat-title">Present Today</span>
+                <div class="stat-icon" style="color: var(--accent-primary);"><i data-lucide="user-check"></i></div>
+              </div>
+              <div class="stat-value" id="member-stat-present" style="color: var(--accent-primary);">0</div>
+              <div class="stat-meta positive">Checked in facility today</div>
+            </div>
+
+            <div class="stat-card" style="border-left: 3px solid #EF4444;">
+              <div class="stat-header">
+                <span class="stat-title">Marked Absent</span>
+                <div class="stat-icon" style="color: #EF4444;"><i data-lucide="user-x"></i></div>
+              </div>
+              <div class="stat-value" id="member-stat-absent" style="color: #EF4444;">0</div>
+              <div class="stat-meta negative">Excused / unexcused leave</div>
+            </div>
+
+            <div class="stat-card" style="border-left: 3px solid #10B981;">
+              <div class="stat-header">
+                <span class="stat-title">Completed Workouts</span>
+                <div class="stat-icon" style="color: #10B981;"><i data-lucide="check-circle-2"></i></div>
+              </div>
+              <div class="stat-value" id="member-stat-completed" style="color: #10B981;">0</div>
+              <div class="stat-meta">Checked out today</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Active Members</span>
+                <div class="stat-icon"><i data-lucide="users"></i></div>
+              </div>
+              <div class="stat-value" id="member-stat-total">0</div>
+              <div class="stat-meta">Eligible for admission</div>
+            </div>
+          </div>
+
+          <!-- Main Interactive Scanner & Active Roster Grid -->
+          <div class="trainer-qr-grid">
+            <!-- Left: QR Chamber & Manual Entry -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <!-- Optical Camera Station -->
+              <div class="card scanner-chamber-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="status-pulse-dot"></div>
+                    <h3 style="font-size: 1.1rem; color: #FFF; margin: 0;">Member Optical Scanner</h3>
+                  </div>
+                  <button id="btn-toggle-member-camera" class="btn btn-sm btn-outline" onclick="toggleMemberCameraScanner()">
+                    <i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera
+                  </button>
+                </div>
+
+                <!-- Scanner Viewport -->
+                <div class="scanner-viewport-box" id="member-scanner-box">
+                  <div id="member-qr-reader" class="qr-camera-stream"></div>
+                  <div class="scanner-reticle-overlay" id="member-reticle-overlay">
+                    <div class="reticle-corner top-left"></div>
+                    <div class="reticle-corner top-right"></div>
+                    <div class="reticle-corner bottom-left"></div>
+                    <div class="reticle-corner bottom-right"></div>
+                    <div class="scanner-laser-beam" id="member-laser-beam"></div>
+                    <div class="scanner-idle-prompt" id="member-scanner-idle-prompt">
+                      <i data-lucide="scan-line" style="width: 44px; height: 44px; color: var(--accent-primary); margin-bottom: 8px; opacity: 0.7;"></i>
+                      <span>Member Camera Standby</span>
+                      <small style="color: var(--text-muted); font-size: 0.75rem;">Click "Start Camera" or use Quick Test below</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="member-camera-status-pill" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="info" style="width: 13px; height: 13px;"></i> Scans Member QR Passes automatically
+                </div>
+              </div>
+
+              <!-- Manual / Barcode Input & 1-Click Simulation Badges -->
+              <div class="card">
+                <h4 style="font-size: 0.95rem; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="keyboard" style="width: 15px; height: 15px; color: var(--accent-primary);"></i> Manual & Barcode Scanner
+                </h4>
+                <form id="quick-checkin-form" onsubmit="handleQuickCheckIn(event)" style="display: flex; gap: 8px;">
+                  <input type="text" id="quick-checkin-input" class="form-input font-mono" placeholder="Enter APX-1001 or scan badge..." style="text-transform: uppercase; font-size: 0.95rem;" required>
+                  <button type="submit" class="btn btn-primary" style="white-space: nowrap;">
+                    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> Scan
+                  </button>
+                </form>
+
+                <!-- Quick Test Badges -->
+                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+                  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 10px;">
+                    1-Click Member Simulation Badges:
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button type="button" class="btn-quick-badge" onclick="simulateMemberScan('APX-1001')">
+                      <span class="badge-code">APX-1001</span>
+                      <span class="badge-name">Alex Rivera</span>
+                      <span class="badge-role">Platinum Elite Member</span>
+                      <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto;"></i>
+                    </button>
+                    <button type="button" class="btn-quick-badge" onclick="simulateMemberScan('APX-1002')">
+                      <span class="badge-code">APX-1002</span>
+                      <span class="badge-name">Sarah Jenkins</span>
+                      <span class="badge-role">Gold Performance Plan</span>
+                      <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto;"></i>
+                    </button>
+                    <button type="button" class="btn-quick-badge" onclick="simulateMemberScan('APX-1004')">
+                      <span class="badge-code">APX-1004</span>
+                      <span class="badge-name">Jordan Hayes</span>
+                      <span class="badge-role">Apex Black VIP Pass</span>
+                      <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto;"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Member Holographic Scan HUD Confirmation Card -->
+              <div id="member-scan-hud-card" class="trainer-hud-card" style="display: none;">
+                <div class="hud-scanner-glow"></div>
+                <div class="hud-header">
+                  <span id="member-hud-action-pill" class="hud-action-badge">CHECK-IN VERIFIED</span>
+                  <button class="hud-close-btn" onclick="hideMemberHud()">&times;</button>
+                </div>
+                <div class="hud-body">
+                  <div class="hud-avatar-wrapper">
+                    <img id="member-hud-avatar" src="" alt="Member" class="hud-avatar">
+                  </div>
+                  <div class="hud-info">
+                    <h4 id="member-hud-name" class="hud-trainer-name">Member Name</h4>
+                    <div id="member-hud-meta" class="hud-trainer-meta">APX-0000 &bull; Plan</div>
+                    <div class="hud-metrics-row">
+                      <div class="hud-metric">
+                        <span class="hud-metric-label">In-Time</span>
+                        <span id="member-hud-in-time" class="hud-metric-val font-mono">--:--</span>
+                      </div>
+                      <div class="hud-metric">
+                        <span class="hud-metric-label">Out-Time</span>
+                        <span id="member-hud-out-time" class="hud-metric-val font-mono">--:--</span>
+                      </div>
+                      <div class="hud-metric">
+                        <span class="hud-metric-label">Status</span>
+                        <span id="member-hud-status" class="hud-metric-val font-mono text-lime">Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="member-hud-footer-message" class="hud-footer-message">
+                  Member entry verified. Turnstile unlocked.
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Today's Active Roster Table -->
+            <div class="card" style="display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 4px;">Today's Attendance Roster</h3>
+                  <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Members and students recorded in the club today</p>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                  <button class="btn btn-sm btn-primary" onclick="openMarkAttendanceModal()" title="Mark Present / Absent Roll-Call" style="white-space: nowrap; padding: 6px 12px; font-size: 0.82rem;">
+                    <i data-lucide="user-check" style="width: 14px; height: 14px;"></i> Mark Attendance
+                  </button>
+                  <button class="btn btn-sm btn-outline" onclick="openMemberBadgesModal()" title="Student & Member QR Passes" style="white-space: nowrap; padding: 6px 12px; font-size: 0.82rem;">
+                    <i data-lucide="qr-code" style="width: 14px; height: 14px;"></i> QR Badges
+                  </button>
+                  <button class="btn btn-sm btn-secondary" onclick="loadTodayAttendance()" title="Refresh Roster" style="padding: 6px 10px;">
+                    <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-responsive" style="flex: 1; overflow-x: auto;">
+                <table class="data-table compact-attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Member / Student</th>
+                      <th>Status</th>
+                      <th>Check-In</th>
+                      <th>Check-Out</th>
+                      <th>Notes</th>
+                      <th style="text-align: right;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="today-attendance-tbody">
+                    <tr><td colspan="6" class="text-center text-muted" style="padding: 28px;">Loading today's attendance roster...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attendance History & CSV Export -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 4px;">Attendance History Log</h3>
+                <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Audit trail across all past dates with full edit capability</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="date" id="attendance-history-from" class="form-input" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+                <span class="text-muted">to</span>
+                <input type="date" id="attendance-history-to" class="form-input" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+                <button class="btn btn-sm btn-outline" onclick="filterAttendanceHistory()">
+                  <i data-lucide="filter" style="width: 14px; height: 14px;"></i> Filter
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="exportAttendanceCsv()">
+                  <i data-lucide="download" style="width: 14px; height: 14px;"></i> Export CSV
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive" style="overflow-x: auto;">
+              <table class="data-table compact-attendance-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Member / Student</th>
+                    <th>Status</th>
+                    <th>Check-In</th>
+                    <th>Check-Out</th>
+                    <th>Notes</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="attendance-history-tbody">
+                  <tr><td colspan="7" class="text-center text-muted" style="padding: 24px;">No historical records loaded.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             3B. TRAINER QR ATTENDANCE DESK VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-trainer-attendance" style="display: none;">
+          <!-- Top Control Header -->
+          <div class="view-toolbar" style="margin-bottom: 24px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-lime">Smart Attendance Hub</span>
+                <span class="badge badge-outline"><i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> Dual-Scan Protocol</span>
+              </div>
+              <h2 style="font-size: 1.8rem; color: #FFF; margin: 8px 0 4px;">Trainer QR Attendance & Shift Station</h2>
+              <p class="text-muted" style="font-size: 0.9rem;">
+                First scan records <strong>IN-TIME</strong> (Shift Start). Second scan records <strong>OUT-TIME</strong> and computes total hours.
+              </p>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <button class="btn btn-outline" onclick="openTrainerBadgesModal()">
+                <i data-lucide="qr-code" style="width: 16px; height: 16px;"></i> Digital Badges
+              </button>
+              <button class="btn btn-secondary" onclick="loadTrainerAttendanceView()">
+                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Sync Roster
+              </button>
+            </div>
+          </div>
+
+          <!-- Shift Stats Grid -->
+          <div class="stats-grid" style="margin-bottom: 28px;">
+            <div class="stat-card" style="border-left: 3px solid var(--accent-primary);">
+              <div class="stat-header">
+                <span class="stat-title">Active On Duty</span>
+                <div class="stat-icon" style="color: var(--accent-primary);"><i data-lucide="activity"></i></div>
+              </div>
+              <div class="stat-value" id="trainer-stat-active" style="color: var(--accent-primary);">0</div>
+              <div class="stat-meta positive">Coaches currently clocked in</div>
+            </div>
+
+            <div class="stat-card" style="border-left: 3px solid #10B981;">
+              <div class="stat-header">
+                <span class="stat-title">Shifts Completed</span>
+                <div class="stat-icon" style="color: #10B981;"><i data-lucide="check-circle-2"></i></div>
+              </div>
+              <div class="stat-value" id="trainer-stat-completed" style="color: #10B981;">0</div>
+              <div class="stat-meta">Full shifts logged today</div>
+            </div>
+
+            <div class="stat-card" style="border-left: 3px solid #F59E0B;">
+              <div class="stat-header">
+                <span class="stat-title">Awaiting Check-In</span>
+                <div class="stat-icon" style="color: #F59E0B;"><i data-lucide="clock"></i></div>
+              </div>
+              <div class="stat-value" id="trainer-stat-awaiting" style="color: #F59E0B;">0</div>
+              <div class="stat-meta">Scheduled / Not yet arrived</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Total Registered Coaches</span>
+                <div class="stat-icon"><i data-lucide="users"></i></div>
+              </div>
+              <div class="stat-value" id="trainer-stat-total">0</div>
+              <div class="stat-meta">Active staff database</div>
+            </div>
+          </div>
+
+          <!-- Main Interactive Scanning & Roster Grid -->
+          <div class="trainer-qr-grid">
+            <!-- Left: QR Chamber & Multi-Modal Scanner -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <!-- Optical Camera Station -->
+              <div class="card scanner-chamber-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="status-pulse-dot"></div>
+                    <h3 style="font-size: 1.1rem; color: #FFF; margin: 0;">Optical QR Scanner</h3>
+                  </div>
+                  <button id="btn-toggle-camera" class="btn btn-sm btn-outline" onclick="toggleCameraScanner()">
+                    <i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera
+                  </button>
+                </div>
+
+                <!-- Scanner Viewport -->
+                <div class="scanner-viewport-box">
+                  <div id="trainer-qr-reader" class="qr-camera-stream"></div>
+                  <!-- Overlay Reticle & Laser Sweep -->
+                  <div class="scanner-reticle-overlay" id="scanner-reticle-overlay">
+                    <div class="reticle-corner top-left"></div>
+                    <div class="reticle-corner top-right"></div>
+                    <div class="reticle-corner bottom-left"></div>
+                    <div class="reticle-corner bottom-right"></div>
+                    <div class="scanner-laser-beam" id="scanner-laser-beam"></div>
+                    <div class="scanner-idle-prompt" id="scanner-idle-prompt">
+                      <i data-lucide="scan-line" style="width: 44px; height: 44px; color: var(--accent-primary); margin-bottom: 8px; opacity: 0.7;"></i>
+                      <span>Camera Standby</span>
+                      <small style="color: var(--text-muted); font-size: 0.75rem;">Click "Start Camera" or use Quick Test below</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="camera-status-pill" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="info" style="width: 13px; height: 13px;"></i> Scans QR badges automatically when presented
+                </div>
+              </div>
+
+              <!-- Manual / USB Barcode Input & 1-Click Test Badges -->
+              <div class="card">
+                <h4 style="font-size: 0.95rem; color: #FFF; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="keyboard" style="width: 15px; height: 15px; color: var(--accent-primary);"></i> Manual & USB Scanner Input
+                </h4>
+                <form id="manual-trainer-scan-form" onsubmit="handleManualTrainerScan(event)" style="display: flex; gap: 8px;">
+                  <input type="text" id="manual-trainer-code-input" class="form-input font-mono" placeholder="Enter TRN-001 or scan barcode..." style="text-transform: uppercase; font-size: 0.95rem;" required>
+                  <button type="submit" class="btn btn-primary" style="white-space: nowrap;">
+                    <i data-lucide="check" style="width: 16px; height: 16px;"></i> Scan
+                  </button>
+                </form>
+
+                <!-- Quick Test Badges -->
+                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+                  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 10px;">
+                    1-Click Simulation Badges (Demo Ready):
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button type="button" class="btn-quick-badge" onclick="simulateTrainerScan('TRN-001')">
+                      <span class="badge-code">TRN-001</span>
+                      <span class="badge-name">Marcus Vance</span>
+                      <span class="badge-role">Head Coach &bull; Bodybuilding</span>
+                      <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto;"></i>
+                    </button>
+                    <button type="button" class="btn-quick-badge" onclick="simulateTrainerScan('TRN-002')">
+                      <span class="badge-code">TRN-002</span>
+                      <span class="badge-name">Elena Rostova</span>
+                      <span class="badge-role">HIIT & Strength Specialist</span>
+                      <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto;"></i>
+                    </button>
+                    <button type="button" class="btn-quick-badge" onclick="simulateTrainerScan('TRN-003')">
+                      <span class="badge-code">TRN-003</span>
+                      <span class="badge-name">David Chen</span>
+                      <span class="badge-role">Calisthenics & Mobility</span>
+                      <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto;"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live Scan Holographic HUD Card -->
+              <div id="trainer-scan-hud-card" class="trainer-hud-card" style="display: none;">
+                <div class="hud-scanner-glow"></div>
+                <div class="hud-header">
+                  <span id="hud-action-pill" class="hud-action-badge">SCAN PROCESSED</span>
+                  <button class="hud-close-btn" onclick="hideTrainerHud()">&times;</button>
+                </div>
+                <div class="hud-body">
+                  <div class="hud-avatar-wrapper">
+                    <img id="hud-trainer-avatar" src="" alt="Trainer" class="hud-avatar">
+                  </div>
+                  <div class="hud-info">
+                    <h4 id="hud-trainer-name" class="hud-trainer-name">Trainer Name</h4>
+                    <div id="hud-trainer-meta" class="hud-trainer-meta">TRN-000 &bull; Coach</div>
+                    <div class="hud-metrics-row">
+                      <div class="hud-metric">
+                        <span class="hud-metric-label">In-Time</span>
+                        <span id="hud-in-time" class="hud-metric-val font-mono">--:--</span>
+                      </div>
+                      <div class="hud-metric">
+                        <span class="hud-metric-label">Out-Time</span>
+                        <span id="hud-out-time" class="hud-metric-val font-mono">--:--</span>
+                      </div>
+                      <div class="hud-metric">
+                        <span class="hud-metric-label">Duration</span>
+                        <span id="hud-total-hours" class="hud-metric-val font-mono text-lime">--</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="hud-status-message" class="hud-footer-message">
+                  Shift successfully updated.
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Today's Shift Roster Table -->
+            <div class="card" style="display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                  <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 4px;">Today's Shift Roster</h3>
+                  <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Live tracking of coaches on duty and shift logs</p>
+                </div>
+                <span class="badge badge-success" style="display: flex; align-items: center; gap: 6px;">
+                  <span class="status-pulse-dot"></span> Live Sync
+                </span>
+              </div>
+
+              <div class="table-responsive" style="flex: 1; overflow-x: auto;">
+                <table class="data-table compact-attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Coach Profile</th>
+                      <th>Status</th>
+                      <th>In-Time</th>
+                      <th>Out-Time</th>
+                      <th>Shift Duration</th>
+                      <th style="text-align: right;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="trainer-today-tbody">
+                    <tr><td colspan="6" class="text-center text-muted" style="padding: 32px;">Loading today's shift roster...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historical Shift Ledger -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 style="font-size: 1.2rem; color: #FFF; margin: 0 0 4px;">Trainer Historical Shift Ledger</h3>
+                <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Audit logs, daily clock-in/out timestamps, and cumulative hours worked</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="date" id="trainer-history-from" class="form-input" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+                <span class="text-muted">to</span>
+                <input type="date" id="trainer-history-to" class="form-input" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+                <button class="btn btn-sm btn-outline" onclick="filterTrainerHistory()">
+                  <i data-lucide="filter" style="width: 14px; height: 14px;"></i> Filter
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="exportTrainerAttendanceCsv()">
+                  <i data-lucide="download" style="width: 14px; height: 14px;"></i> Export CSV
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Trainer</th>
+                    <th>Shift Status</th>
+                    <th>In-Time</th>
+                    <th>Out-Time</th>
+                    <th>Total Hours</th>
+                  </tr>
+                </thead>
+                <tbody id="trainer-history-tbody">
+                  <tr><td colspan="6" class="text-center text-muted" style="padding: 24px;">No shift history loaded.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             4. TRAINERS MANAGEMENT VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-trainers" style="display: none;">
+          <div class="view-toolbar">
+            <div>
+              <h3 style="font-size: 1.3rem; color: #FFF;">Master Trainers & Coaches</h3>
+              <p class="text-muted" style="font-size: 0.85rem;">Manage personal trainer profiles, availability, and client loads</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddTrainerModal()">
+              <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Add Trainer
+            </button>
+          </div>
+
+          <div class="features-grid" id="trainers-grid-container"></div>
+        </div>
+
+        <!-- ====================================================================
+             5. MEMBERSHIP PLANS MANAGEMENT VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-plans" style="display: none;">
+          <div class="view-toolbar">
+            <div>
+              <h3 style="font-size: 1.3rem; color: #FFF;">Configurable Membership Plans</h3>
+              <p class="text-muted" style="font-size: 0.85rem;">Manage tiers, durations, pricing, and feature highlights</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddPlanModal()">
+              <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Create New Plan
+            </button>
+          </div>
+
+          <div class="pricing-grid" id="plans-grid-container"></div>
+        </div>
+
+        <!-- ====================================================================
+             6. PAYMENTS & BILLING VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-payments" style="display: none;">
+          <div class="view-toolbar">
+            <div class="toolbar-search">
+              <i data-lucide="search" class="toolbar-search-icon"></i>
+              <input type="text" id="payment-search-input" class="form-input" placeholder="Search invoice, member, or code...">
+            </div>
+
+            <div class="toolbar-filters">
+              <select id="payment-status-filter" class="form-select" style="width: 140px;">
+                <option value="all">All Status</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending</option>
+              </select>
+
+              <select id="payment-method-filter" class="form-select" style="width: 140px;">
+                <option value="all">All Methods</option>
+                <option value="card">Card</option>
+                <option value="cash">Cash</option>
+                <option value="upi">UPI</option>
+                <option value="bank_transfer">Bank Transfer</option>
+              </select>
+
+              <button class="btn btn-primary" onclick="openRecordPaymentModal()">
+                <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Record Payment
+              </button>
+              <button class="btn btn-secondary" onclick="exportPaymentsCsv()">
+                <i data-lucide="download" style="width: 16px; height: 16px;"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Invoice No</th>
+                  <th>Member</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="payments-table-body"></tbody>
+            </table>
+          </div>
+          <div id="payments-pagination"></div>
+        </div>
+
+        <!-- ====================================================================
+             7. WORKOUT ROUTINES VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-workouts" style="display: none;">
+          <div class="view-toolbar">
+            <div>
+              <h3 style="font-size: 1.3rem; color: #FFF;">Workout Routine Templates</h3>
+              <p class="text-muted" style="font-size: 0.85rem;">Create training splits and assign to members</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddWorkoutModal()">
+              <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Create Routine
+            </button>
+          </div>
+
+          <div id="workouts-list-container"></div>
+        </div>
+
+        <!-- ====================================================================
+             8. DIET BLUEPRINTS VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-diets" style="display: none;">
+          <div class="view-toolbar">
+            <div>
+              <h3 style="font-size: 1.3rem; color: #FFF;">Nutrition & Diet Blueprints</h3>
+              <p class="text-muted" style="font-size: 0.85rem;">Define calorie goals, macro targets, and scheduled meals</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddDietModal()">
+              <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Create Diet Plan
+            </button>
+          </div>
+
+          <div id="diets-list-container"></div>
+        </div>
+
+        <!-- ====================================================================
+             9. REPORTS & ANALYTICS VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-reports" style="display: none;">
+          <div class="view-toolbar">
+            <div>
+              <h3 style="font-size: 1.3rem; color: #FFF;">Business Reports & CSV Exports</h3>
+              <p class="text-muted" style="font-size: 0.85rem;">Download raw transaction logs and inspect performance breakdown</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn btn-primary" onclick="exportPaymentsCsv()">
+                <i data-lucide="download" style="width: 16px; height: 16px;"></i> Export Payments CSV
+              </button>
+              <button class="btn btn-secondary" onclick="exportAttendanceCsv()">
+                <i data-lucide="download" style="width: 16px; height: 16px;"></i> Export Attendance CSV
+              </button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="card">
+              <h3 style="font-size: 1.1rem; color: #FFF; margin-bottom: 16px;">Revenue by Payment Method</h3>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead><tr><th>Method</th><th>Transactions</th><th>Total Revenue</th></tr></thead>
+                  <tbody id="report-revenue-method-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="font-size: 1.1rem; color: #FFF; margin-bottom: 16px;">Top Membership Plans</h3>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead><tr><th>Plan Name</th><th>Subscribers</th><th>Revenue</th></tr></thead>
+                  <tbody id="report-top-plans-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             10. SETTINGS VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-settings" style="display: none;">
+          <div class="card" style="max-width: 600px;">
+            <h3 style="font-size: 1.3rem; color: #FFF; margin-bottom: 8px;">Administrator Credentials</h3>
+            <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 24px;">Update admin login email or change master password</p>
+
+            <form onsubmit="handleChangePassword(event)">
+              <div class="form-group">
+                <label class="form-label" for="settings-admin-email">Account Email</label>
+                <input type="email" id="settings-admin-email" class="form-input" readonly style="opacity: 0.7;">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="current_password">Current Password</label>
+                <input type="password" name="current_password" id="current_password" class="form-input" placeholder="••••••••" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="new_password">New Password</label>
+                <input type="password" name="new_password" id="new_password" class="form-input" placeholder="Minimum 6 characters" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="confirm_password">Confirm New Password</label>
+                <input type="password" name="confirm_password" id="confirm_password" class="form-input" placeholder="Repeat new password" required>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Update Password</button>
+            </form>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODALS & DRAWERS
+       ==================================================================== -->
+
+  <!-- Modal: Add Member -->
+  <div class="modal-overlay" id="modal-add-member">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Register New Member</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-add-member')">&times;</button>
+      </div>
+      <form id="add-member-form" onsubmit="handleAddMemberSubmit(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="m-fullname">Full Name *</label>
+              <input type="text" name="full_name" id="m-fullname" class="form-input" placeholder="e.g. Jordan Miller" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="m-email">Email Address *</label>
+              <input type="email" name="email" id="m-email" class="form-input" placeholder="jordan@domain.com" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="m-phone">Phone Number *</label>
+              <input type="text" name="phone" id="m-phone" class="form-input" placeholder="+1 (555) 000-0000" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="m-gender">Gender</label>
+              <select name="gender" id="m-gender" class="form-select">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="m-dob">Date of Birth</label>
+              <input type="date" name="date_of_birth" id="m-dob" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="m-emergency">Emergency Contact</label>
+              <input type="text" name="emergency_contact" id="m-emergency" class="form-input" placeholder="Name and Phone">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="m-address">Residential Address</label>
+            <input type="text" name="address" id="m-address" class="form-input" placeholder="Street, City, State">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="add-member-plan">Initial Membership Plan</label>
+              <select name="plan_id" id="add-member-plan" class="form-select"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="add-member-trainer">Personal Trainer</label>
+              <select name="trainer_id" id="add-member-trainer" class="form-select"></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="m-password">Portal Login Password</label>
+            <input type="password" name="password" id="m-password" class="form-input" value="Member@123">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-add-member')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Complete Registration</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Member -->
+  <div class="modal-overlay" id="modal-edit-member">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Edit Member Profile</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-edit-member')">&times;</button>
+      </div>
+      <form id="edit-member-form" onsubmit="handleEditMemberSubmit(event)">
+        <input type="hidden" name="member_id">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="em-fullname">Full Name</label>
+              <input type="text" name="full_name" id="em-fullname" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="em-email">Email (Read-Only)</label>
+              <input type="email" name="email" id="em-email" class="form-input" readonly style="opacity: 0.7;">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="em-phone">Phone</label>
+              <input type="text" name="phone" id="em-phone" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="em-gender">Gender</label>
+              <select name="gender" id="em-gender" class="form-select">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="em-dob">Date of Birth</label>
+              <input type="date" name="date_of_birth" id="em-dob" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="em-status">Membership Status</label>
+              <select name="status" id="em-status" class="form-select">
+                <option value="active">Active</option>
+                <option value="expired">Expired</option>
+                <option value="pending">Pending</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="em-emergency">Emergency Contact</label>
+            <input type="text" name="emergency_contact" id="em-emergency" class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="em-address">Address</label>
+            <input type="text" name="address" id="em-address" class="form-input">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-edit-member')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Drawer: View Member Details -->
+  <div class="drawer-overlay" id="member-detail-drawer">
+    <div class="drawer-panel">
+      <div class="modal-header">
+        <h3 style="font-size: 1.2rem;">Member Dossier</h3>
+        <button class="btn-icon" onclick="UI.closeDrawer('member-detail-drawer')">&times;</button>
+      </div>
+      <div class="modal-body" id="member-drawer-content"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Renew Plan -->
+  <div class="modal-overlay" id="modal-renew-plan">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.2rem;">Assign / Renew Plan</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-renew-plan')">&times;</button>
+      </div>
+      <form onsubmit="handleRenewSubmit(event)">
+        <input type="hidden" name="member_id" id="renew-member-id">
+        <div class="modal-body">
+          <p style="color: var(--text-secondary); margin-bottom: 16px;">
+            Member: <strong style="color: #FFF;" id="renew-member-name-display"></strong>
+          </p>
+          <div class="form-group">
+            <label class="form-label" for="renew-plan-select">Select New Plan</label>
+            <select name="plan_id" id="renew-plan-select" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="renew-payment-method">Settlement Method</label>
+            <select name="payment_method" id="renew-payment-method" class="form-select">
+              <option value="card">Credit / Debit Card</option>
+              <option value="cash">Cash (Front Desk)</option>
+              <option value="upi">UPI / Mobile Pay</option>
+              <option value="bank_transfer">Wire / Bank Transfer</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-renew-plan')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Process Activation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Trainer -->
+  <div class="modal-overlay" id="modal-add-trainer">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Register Master Trainer</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-add-trainer')">&times;</button>
+      </div>
+      <form id="add-trainer-form" onsubmit="handleAddTrainerSubmit(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="tr-name">Full Name *</label>
+              <input type="text" name="full_name" id="tr-name" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="tr-email">Email Address *</label>
+              <input type="email" name="email" id="tr-email" class="form-input" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="tr-phone">Phone *</label>
+              <input type="text" name="phone" id="tr-phone" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="tr-spec">Specialization *</label>
+              <input type="text" name="specialization" id="tr-spec" class="form-input" placeholder="e.g. Strength & Conditioning" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="tr-exp">Experience (Years)</label>
+              <input type="number" name="experience_years" id="tr-exp" class="form-input" value="5">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="tr-schedule">Weekly Schedule</label>
+              <input type="text" name="schedule" id="tr-schedule" class="form-input" value="Mon-Fri: 06:00 - 14:00">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tr-bio">Biography</label>
+            <textarea name="bio" id="tr-bio" class="form-textarea" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tr-photo">Photo URL</label>
+            <input type="url" name="photo_url" id="tr-photo" class="form-input" placeholder="https://images.unsplash.com/...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-add-trainer')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Trainer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Assign Trainer -->
+  <div class="modal-overlay" id="modal-assign-trainer">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.2rem;">Assign Client to Coach</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-assign-trainer')">&times;</button>
+      </div>
+      <form id="assign-trainer-form" onsubmit="handleAssignTrainerSubmit(event)">
+        <input type="hidden" name="trainer_id">
+        <div class="modal-body">
+          <p style="color: var(--text-secondary); margin-bottom: 16px;">
+            Trainer: <strong style="color: #FFF;" id="assign-trainer-name-display"></strong>
+          </p>
+          <div class="form-group">
+            <label class="form-label" for="assign-member-select">Select Member</label>
+            <select name="member_id" id="assign-member-select" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="trainer-assign-notes">Coaching Notes</label>
+            <input type="text" name="notes" id="trainer-assign-notes" class="form-input" placeholder="Focus on Olympic lifts...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-assign-trainer')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign Client</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Plan -->
+  <div class="modal-overlay" id="modal-add-plan">
+    <div class="modal-content" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Create Membership Tier</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-add-plan')">&times;</button>
+      </div>
+      <form id="add-plan-form" onsubmit="handleAddPlanSubmit(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="plan-name-input">Plan Name *</label>
+              <input type="text" name="name" id="plan-name-input" class="form-input" placeholder="e.g. Diamond VIP" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="plan-code-input">Plan Code *</label>
+              <input type="text" name="code" id="plan-code-input" class="form-input" placeholder="PLAN-DIAMOND" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="plan-duration-input">Duration (Months) *</label>
+              <input type="number" name="duration_months" id="plan-duration-input" class="form-input" value="3" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="plan-price-input">Price ($) *</label>
+              <input type="number" step="0.01" name="price" id="plan-price-input" class="form-input" placeholder="199.00" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="plan-badge-input">Badge Label (Optional)</label>
+            <input type="text" name="badge" id="plan-badge-input" class="form-input" placeholder="Popular / Best Value">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="plan-desc-input">Description</label>
+            <input type="text" name="description" id="plan-desc-input" class="form-input" placeholder="Short summary">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="plan-features-input">Features (One per line)</label>
+            <textarea name="features" id="plan-features-input" class="form-textarea" rows="4" placeholder="24/7 Access&#10;Sauna Access&#10;Guest Passes"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-add-plan')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Plan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Record Payment -->
+  <div class="modal-overlay" id="modal-record-payment">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Record Offline Payment</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-record-payment')">&times;</button>
+      </div>
+      <form id="record-payment-form" onsubmit="handleRecordPaymentSubmit(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="payment-member-select">Member</label>
+            <select name="member_id" id="payment-member-select" class="form-select" required></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="pay-amount">Amount ($)</label>
+              <input type="number" step="0.01" name="amount" id="pay-amount" class="form-input" placeholder="129.00" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pay-method">Payment Method</label>
+              <select name="payment_method" id="pay-method" class="form-select">
+                <option value="cash">Cash</option>
+                <option value="card">Card</option>
+                <option value="upi">UPI</option>
+                <option value="bank_transfer">Bank Transfer</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pay-date">Payment Date</label>
+            <input type="date" name="payment_date" id="pay-date" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pay-notes">Notes</label>
+            <input type="text" name="notes" id="pay-notes" class="form-input" placeholder="Receipt remarks">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-record-payment')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate Receipt</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Receipt Invoice View -->
+  <div class="modal-overlay" id="modal-receipt">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Payment Receipt</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-receipt')">&times;</button>
+      </div>
+      <div class="modal-body" id="receipt-modal-container"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="UI.closeModal('modal-receipt')">Close</button>
+        <button class="btn btn-primary" onclick="printCurrentReceipt()">
+          <i data-lucide="printer" style="width: 16px; height: 16px;"></i> Print Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create Workout -->
+  <div class="modal-overlay" id="modal-add-workout">
+    <div class="modal-content" style="max-width: 760px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Create Workout Routine Template</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-add-workout')">&times;</button>
+      </div>
+      <form id="add-workout-form" onsubmit="handleAddWorkoutSubmit(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="wo-name">Routine Name *</label>
+              <input type="text" name="name" id="wo-name" class="form-input" placeholder="e.g. 4-Day Upper/Lower Split" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="wo-goal">Goal *</label>
+              <input type="text" name="goal" id="wo-goal" class="form-input" placeholder="Hypertrophy / Fat Loss" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="wo-difficulty">Difficulty</label>
+              <select name="difficulty" id="wo-difficulty" class="form-select">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate" selected>Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="wo-duration">Duration (Weeks)</label>
+              <input type="number" name="duration_weeks" id="wo-duration" class="form-input" value="8">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="wo-desc">Description</label>
+            <input type="text" name="description" id="wo-desc" class="form-input" placeholder="Overview of programming">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
+            <h4 style="font-size: 1rem; color: var(--accent-primary);">Exercise Routine Steps</h4>
+            <button type="button" class="btn btn-sm btn-outline" onclick="addExerciseRow()">+ Add Exercise</button>
+          </div>
+          <div id="workout-exercises-rows"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-add-workout')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Routine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Assign Workout -->
+  <div class="modal-overlay" id="modal-assign-workout">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.2rem;">Assign Routine to Member</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-assign-workout')">&times;</button>
+      </div>
+      <form onsubmit="handleAssignWorkoutSubmit(event)">
+        <input type="hidden" name="plan_id" id="assign-workout-plan-id">
+        <div class="modal-body">
+          <p style="color: var(--text-secondary); margin-bottom: 16px;">
+            Routine: <strong style="color: #FFF;" id="assign-workout-plan-name"></strong>
+          </p>
+          <div class="form-group">
+            <label class="form-label" for="assign-workout-member-select">Select Member</label>
+            <select name="member_id" id="assign-workout-member-select" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="assign-workout-notes">Personal Coach Notes</label>
+            <input type="text" name="notes" id="assign-workout-notes" class="form-input" placeholder="Focus on form and progressive overload">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-assign-workout')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign Routine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create Diet -->
+  <div class="modal-overlay" id="modal-add-diet">
+    <div class="modal-content" style="max-width: 760px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Create Diet Blueprint Template</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-add-diet')">&times;</button>
+      </div>
+      <form id="add-diet-form" onsubmit="handleAddDietSubmit(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="diet-name-input">Blueprint Name *</label>
+              <input type="text" name="name" id="diet-name-input" class="form-input" placeholder="e.g. Lean Shred & Cut" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="diet-goal-input">Goal *</label>
+              <input type="text" name="goal" id="diet-goal-input" class="form-input" placeholder="Fat Loss / Bulking" required>
+            </div>
+          </div>
+          <div class="form-row" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="form-group">
+              <label class="form-label" for="diet-cals-input">Calories</label>
+              <input type="number" name="calorie_target" id="diet-cals-input" class="form-input" value="2200" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="diet-protein-input">Protein (g)</label>
+              <input type="number" name="protein_g" id="diet-protein-input" class="form-input" value="180">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="diet-carbs-input">Carbs (g)</label>
+              <input type="number" name="carbs_g" id="diet-carbs-input" class="form-input" value="200">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="diet-fats-input">Fats (g)</label>
+              <input type="number" name="fats_g" id="diet-fats-input" class="form-input" value="60">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="diet-desc-input">Description</label>
+            <input type="text" name="description" id="diet-desc-input" class="form-input" placeholder="Guidance and hydration notes">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
+            <h4 style="font-size: 1rem; color: var(--accent-primary);">Meal Timetable Items</h4>
+            <button type="button" class="btn btn-sm btn-outline" onclick="addMealRow()">+ Add Meal</button>
+          </div>
+          <div id="diet-meals-rows"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-add-diet')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Blueprint</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Assign Diet -->
+  <div class="modal-overlay" id="modal-assign-diet">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.2rem;">Assign Diet to Member</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-assign-diet')">&times;</button>
+      </div>
+      <form onsubmit="handleAssignDietSubmit(event)">
+        <input type="hidden" name="plan_id" id="assign-diet-plan-id">
+        <div class="modal-body">
+          <p style="color: var(--text-secondary); margin-bottom: 16px;">
+            Diet: <strong style="color: #FFF;" id="assign-diet-plan-name"></strong>
+          </p>
+          <div class="form-group">
+            <label class="form-label" for="assign-diet-member-select">Select Member</label>
+            <select name="member_id" id="assign-diet-member-select" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="assign-diet-notes">Nutritionist Instructions</label>
+            <input type="text" name="notes" id="assign-diet-notes" class="form-input" placeholder="Drink 3 liters of water daily">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-assign-diet')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign Diet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Trainer Digital QR Badges -->
+  <div class="modal-overlay" id="modal-trainer-badges">
+    <div class="modal-content" style="max-width: 900px; width: 95%;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 4px;">Trainer Digital QR Passes</h3>
+          <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Verified optical credentials for high-speed turnstile clock-in/clock-out</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button type="button" class="btn btn-sm btn-primary" onclick="printTrainerBadges()">
+            <i data-lucide="printer" style="width: 14px; height: 14px;"></i> Print Badges
+          </button>
+          <button class="btn-icon" onclick="UI.closeModal('modal-trainer-badges')">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <div id="trainer-badges-grid" class="trainer-badges-printable-grid">
+          <!-- Dynamic badges injected via JS -->
+          <div class="text-center text-muted" style="padding: 30px;">Loading QR credentials...</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <span class="text-muted" style="font-size: 0.8rem;">
+          <i data-lucide="shield" style="width: 12px; height: 12px; display: inline;"></i> Scannable by optical camera, laser barcode readers, or front desk tablets.
+        </span>
+        <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-trainer-badges')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mark Attendance (Roll-Call: Present / Absent / Late) -->
+  <div class="modal-overlay" id="modal-mark-attendance">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 4px;">Mark Member Attendance</h3>
+          <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Record member roll-call as Present, Absent, or Late</p>
+        </div>
+        <button class="btn-icon" onclick="UI.closeModal('modal-mark-attendance')">&times;</button>
+      </div>
+      <form onsubmit="handleMarkAttendanceSubmit(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="mark-member-select">Select Member / Student</label>
+            <select name="member_id" id="mark-member-select" class="form-select" required></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="mark-status-select">Attendance Status</label>
+              <select name="status" id="mark-status-select" class="form-select" onchange="toggleMarkStatusFields()" required>
+                <option value="present">Present (In Facility)</option>
+                <option value="absent">Absent (Not Arrived / Leave)</option>
+                <option value="late">Late Arrival</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mark-date-input">Date</label>
+              <input type="date" name="date" id="mark-date-input" class="form-input" required>
+            </div>
+          </div>
+          <div class="form-row" id="mark-time-fields">
+            <div class="form-group">
+              <label class="form-label" for="mark-checkin-time">Check-In Time</label>
+              <input type="time" name="check_in_time" id="mark-checkin-time" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mark-checkout-time">Check-Out Time (Optional)</label>
+              <input type="time" name="check_out_time" id="mark-checkout-time" class="form-input">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mark-notes-input">Notes / Remarks</label>
+            <input type="text" name="notes" id="mark-notes-input" class="form-input" placeholder="e.g. Medical leave, Exam, Regular workout, Forgot pass">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-mark-attendance')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Record Attendance</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Attendance Record -->
+  <div class="modal-overlay" id="modal-edit-attendance">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 4px;">Edit Attendance Record</h3>
+          <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Adjust check-in/out timestamps, status, or remarks</p>
+        </div>
+        <button class="btn-icon" onclick="UI.closeModal('modal-edit-attendance')">&times;</button>
+      </div>
+      <form onsubmit="handleEditAttendanceSubmit(event)">
+        <input type="hidden" id="edit-attendance-id">
+        <div class="modal-body">
+          <div style="background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 16px;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Member Information</div>
+            <div style="font-size: 1.1rem; font-weight: 700; color: #FFF;" id="edit-attendance-member-name">—</div>
+            <div class="font-mono text-lime" style="font-size: 0.85rem;" id="edit-attendance-member-code">—</div>
+            <div class="text-muted" style="font-size: 0.8rem; margin-top: 4px;" id="edit-attendance-date">—</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-attendance-status">Attendance Status</label>
+            <select id="edit-attendance-status" class="form-select" onchange="toggleEditStatusFields()" required>
+              <option value="present">Present</option>
+              <option value="absent">Absent</option>
+              <option value="late">Late Arrival</option>
+            </select>
+          </div>
+
+          <div class="form-row" id="edit-time-fields">
+            <div class="form-group">
+              <label class="form-label" for="edit-attendance-in-time">Check-In Time</label>
+              <input type="time" id="edit-attendance-in-time" class="form-input" step="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-attendance-out-time">Check-Out Time</label>
+              <input type="time" id="edit-attendance-out-time" class="form-input" step="1">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-attendance-notes">Remarks / Reason</label>
+            <input type="text" id="edit-attendance-notes" class="form-input" placeholder="e.g. Manual correction, medical leave">
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+          <button type="button" class="btn btn-outline" style="color: #EF4444; border-color: rgba(239,68,68,0.4);" onclick="handleDeleteAttendanceClick()">
+            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Delete Log
+          </button>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-edit-attendance')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Member / Student Digital QR Badges -->
+  <div class="modal-overlay" id="modal-member-badges">
+    <div class="modal-content" style="max-width: 960px; width: 95%;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 4px;">Student & Member Digital QR Passes</h3>
+          <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Verified optical turnstile passes for high-speed facility admission</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button type="button" class="btn btn-sm btn-primary" onclick="printMemberBadges()">
+            <i data-lucide="printer" style="width: 14px; height: 14px;"></i> Print Passes
+          </button>
+          <button class="btn-icon" onclick="UI.closeModal('modal-member-badges')">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <div id="member-badges-grid" class="trainer-badges-printable-grid">
+          <div class="text-center text-muted" style="padding: 30px;">Loading verified member credentials...</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <span class="text-muted" style="font-size: 0.8rem;">
+          <i data-lucide="shield" style="width: 12px; height: 12px; display: inline;"></i> Encoded with format <code>APEX:MEMBER:APX-XXXX</code>. Scannable at front desk or turnstile.
+        </span>
+        <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-member-badges')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer: Notifications -->
+  <div class="drawer-overlay" id="notifications-drawer">
+    <div class="drawer-panel">
+      <div class="modal-header">
+        <h3 style="font-size: 1.2rem;">System Notifications</h3>
+        <button class="btn-icon" onclick="UI.closeDrawer('notifications-drawer')">&times;</button>
+      </div>
+      <div style="padding: 12px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: flex-end;">
+        <button class="btn btn-sm btn-outline" onclick="markAllNotificationsRead()">Mark All Read</button>
+      </div>
+      <div class="modal-body" id="notifications-drawer-list"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/advanced-fx.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/admin.js"></script>
+  <script>
+    // System live clock ticker
+    function updateLiveClock() {
+      const el = document.getElementById('live-clock');
+      if (el) {
+        const now = new Date();
+        el.textContent = now.toLocaleTimeString('en-US', { hour12: true });
+      }
+    }
+    setInterval(updateLiveClock, 1000);
+    updateLiveClock();
+  </script>
+</body>
+</html>

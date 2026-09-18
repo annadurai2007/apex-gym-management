@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — APEX FITNESS CLUB</title>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .auth-wrapper {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      min-height: 100vh;
+      background: var(--bg-main);
+    }
+
+    .auth-visual {
+      position: relative;
+      background: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80') center/cover no-repeat;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px;
+    }
+
+    .auth-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(9, 11, 10, 0.4) 0%, rgba(9, 11, 10, 0.95) 100%);
+    }
+
+    .auth-visual-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .auth-form-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 48px 64px;
+      max-width: 580px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .demo-pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 20px 0;
+      padding: 16px;
+      background: var(--bg-card);
+      border: 1px dashed var(--border-medium);
+      border-radius: var(--radius-md);
+    }
+
+    .demo-pill {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .demo-pill:hover {
+      background: var(--accent-subtle);
+      color: var(--accent-primary);
+      border-color: var(--accent-border);
+    }
+
+    @media (max-width: 900px) {
+      .auth-wrapper { grid-template-columns: 1fr; }
+      .auth-visual { display: none; }
+      .auth-form-container { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <div class="auth-wrapper">
+    <!-- Visual Left Panel -->
+    <div class="auth-visual">
+      <div class="auth-visual-content">
+        <a href="/" class="brand-logo">
+          <div class="brand-icon">A</div>
+          <div class="brand-text">APEX <span>FITNESS</span></div>
+        </a>
+      </div>
+
+      <div class="auth-visual-content">
+        <span class="badge badge-lime" style="margin-bottom: 12px;">Portal Access</span>
+        <h2 style="font-size: 2.4rem; color: #FFF; line-height: 1.15; margin-bottom: 12px;">
+          DISCIPLINE IS THE BRIDGE BETWEEN GOALS AND ACCOMPLISHMENT.
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 440px;">
+          Access your bespoke training routines, nutritional macros, attendance metrics, and club reservations.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right Login Form Panel -->
+    <div class="auth-form-container">
+      <div style="margin-bottom: 32px;">
+        <h1 style="font-size: 2.2rem; color: #FFF; margin-bottom: 8px;">Welcome Back</h1>
+        <p class="text-muted">Sign in to your Apex Fitness Club account</p>
+      </div>
+
+      <!-- Demo Accounts 1-Click Fill -->
+      <div>
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em;">
+          <i data-lucide="sparkles" style="width: 14px; height: 14px; vertical-align: middle;"></i> Quick Demo Login Fill:
+        </div>
+        <div class="demo-pill-group">
+          <button type="button" class="demo-pill" onclick="fillCredentials('admin@apexgym.com', 'Admin@123', 'admin')">
+            <span class="badge badge-danger" style="padding: 2px 6px; font-size: 0.65rem;">Admin</span> admin@apexgym.com
+          </button>
+          <button type="button" class="demo-pill" onclick="fillCredentials('marcus@apexgym.com', 'Trainer@123', 'trainer')">
+            <span class="badge badge-info" style="padding: 2px 6px; font-size: 0.65rem;">Trainer</span> marcus@apexgym.com
+          </button>
+          <button type="button" class="demo-pill" onclick="fillCredentials('alex@apexgym.com', 'Member@123', 'member')">
+            <span class="badge badge-success" style="padding: 2px 6px; font-size: 0.65rem;">Member</span> alex@apexgym.com
+          </button>
+          <button type="button" class="demo-pill" onclick="fillCredentials('sarah@apexgym.com', 'Member@123', 'member')">
+            <span class="badge badge-warning" style="padding: 2px 6px; font-size: 0.65rem;">Expiring</span> sarah@apexgym.com
+          </button>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-input" placeholder="name@apexgym.com" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px;">
+            <label class="form-label" for="login-password" style="margin-bottom: 0;">Password</label>
+            <a href="#" onclick="UI.showToast('Demo accounts are pre-filled above.', 'info')" style="font-size: 0.78rem; color: var(--accent-primary); text-decoration: none;">Forgot Password?</a>
+          </div>
+          <div style="position: relative;">
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+            <button type="button" id="toggle-pw-btn" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer;" aria-label="Toggle password visibility">
+              <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="remember-me" checked style="accent-color: var(--accent-primary); cursor: pointer;">
+          <label for="remember-me" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">Keep me authenticated on this workstation</label>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" style="width: 100%;">
+          Sign In to Apex <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 32px; font-size: 0.88rem; color: var(--text-muted);">
+        Don't have a membership? <a href="/#plans" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;">Choose a Plan</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/advanced-fx.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      UI.refreshIcons();
+
+      // Check if user is already logged in
+      if (Auth.isAuthenticated()) {
+        const role = Auth.getRole();
+        if (role === 'member') {
+          window.location.href = '/member';
+        } else {
+          window.location.href = '/admin';
+        }
+      }
+
+      // Password toggle
+      const pwInput = document.getElementById('login-password');
+      const toggleBtn = document.getElementById('toggle-pw-btn');
+      toggleBtn.addEventListener('click', () => {
+        const isPw = pwInput.type === 'password';
+        pwInput.type = isPw ? 'text' : 'password';
+        toggleBtn.innerHTML = isPw ? '<i data-lucide="eye-off" style="width: 18px; height: 18px;"></i>' : '<i data-lucide="eye" style="width: 18px; height: 18px;"></i>';
+        UI.refreshIcons();
+      });
+
+      // Login Form Submission
+      const form = document.getElementById('login-form');
+      const submitBtn = document.getElementById('submit-btn');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = pwInput.value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Authenticating...';
+
+        const result = await Auth.login(email, password);
+
+        if (result.success) {
+          UI.showToast('Login authorized. Redirecting...', 'success', 'Welcome');
+          setTimeout(() => {
+            const role = result.user.role;
+            if (role === 'member') {
+              window.location.href = '/member';
+            } else {
+              window.location.href = '/admin';
+            }
+          }, 600);
+        } else {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Sign In to Apex <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>';
+          UI.refreshIcons();
+          UI.showToast(result.message || 'Authentication failed', 'error');
+        }
+      });
+    });
+
+    function fillCredentials(email, password, role) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = password;
+      UI.showToast(`Pre-filled ${role.toUpperCase()} credentials: ${email}`, 'info');
+    }
+  </script>
+</body>
+</html>

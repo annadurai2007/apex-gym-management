@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Portal — APEX FITNESS CLUB</title>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- QR Code Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <div class="app-layout">
+    <!-- Member Sidebar -->
+    <aside class="sidebar" id="main-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="sidebar-brand">
+          <div class="brand-icon">A</div>
+          <div class="sidebar-brand-name">APEX <span>MEMBER</span></div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-category">My Fitness Suite</div>
+        <a class="nav-item member-nav-item active" data-tab="overview">
+          <span class="nav-item-icon"><i data-lucide="home"></i></span>
+          <span class="nav-item-label">Home Overview</span>
+        </a>
+        <a class="nav-item member-nav-item" data-tab="workouts">
+          <span class="nav-item-icon"><i data-lucide="dumbbell"></i></span>
+          <span class="nav-item-label">My Workout Split</span>
+        </a>
+        <a class="nav-item member-nav-item" data-tab="diets">
+          <span class="nav-item-icon"><i data-lucide="utensils"></i></span>
+          <span class="nav-item-label">Nutrition Blueprint</span>
+        </a>
+        <a class="nav-item member-nav-item" data-tab="attendance">
+          <span class="nav-item-icon"><i data-lucide="calendar"></i></span>
+          <span class="nav-item-label">Check-In History</span>
+        </a>
+        <a class="nav-item member-nav-item" data-tab="billing">
+          <span class="nav-item-icon"><i data-lucide="receipt"></i></span>
+          <span class="nav-item-label">Invoices & Receipts</span>
+        </a>
+        <a class="nav-item member-nav-item" data-tab="profile">
+          <span class="nav-item-icon"><i data-lucide="user"></i></span>
+          <span class="nav-item-label">Profile & Security</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-secondary btn-sm" id="member-logout-btn" style="width: 100%;">
+          <i data-lucide="log-out" style="width: 16px; height: 16px;"></i> Log Out
+        </button>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-toggle" id="member-mobile-sidebar-toggle" title="Toggle Navigation">
+            <i data-lucide="menu"></i>
+          </button>
+          <h2 class="page-title">Personal Performance Portal</h2>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Notification Bell -->
+          <button class="notif-btn" id="member-notif-btn" title="View Notifications">
+            <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
+            <span class="notif-badge" id="member-notif-badge" style="display: none;">0</span>
+          </button>
+
+          <!-- User Pill -->
+          <div class="user-profile-pill">
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80" alt="Member" class="user-pill-avatar">
+            <div>
+              <div class="user-pill-name" id="member-topbar-name">Member</div>
+              <div class="user-pill-role font-mono" id="member-badge-code">APX-0000</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-body">
+
+        <!-- ====================================================================
+             TAB 1: HOME OVERVIEW
+             ==================================================================== -->
+        <div class="member-tab-content" id="tab-overview">
+          <!-- Personalized Welcome Banner with Expiry Countdown -->
+          <div class="member-hero-card">
+            <div>
+              <span class="badge badge-lime" id="member-status-badge">Active Status</span>
+              <h1 style="font-size: 2.2rem; color: #FFF; margin: 8px 0 4px;">
+                Welcome back, <span id="member-greeting-name">Athlete</span>
+              </h1>
+              <p class="text-muted" style="font-size: 0.95rem;">
+                Current Plan: <strong style="color: #FFF;" id="member-plan-name">Platinum Elite</strong> &bull; Discipline creates champions.
+              </p>
+            </div>
+
+            <!-- Expiry Countdown Box -->
+            <div class="countdown-box">
+              <div class="countdown-days" id="countdown-days-val">—</div>
+              <div class="countdown-label" id="countdown-status-text">Days remaining</div>
+            </div>
+          </div>
+
+          <!-- Quick Stats Grid -->
+          <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Monthly Check-Ins</span>
+                <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
+              </div>
+              <div class="stat-value" id="member-total-checkins" style="color: var(--accent-primary);">0</div>
+              <div class="stat-meta positive">Facility Attendance Streak</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Access Status</span>
+                <div class="stat-icon"><i data-lucide="shield"></i></div>
+              </div>
+              <div class="stat-value" style="font-size: 1.5rem; color: var(--status-success);">All Arenas Valid</div>
+              <div class="stat-meta">Keycard active 24/7</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Quick Actions</span>
+                <div class="stat-icon"><i data-lucide="zap"></i></div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                <button class="btn btn-sm btn-primary" onclick="openMemberMyQrPassModal()">
+                  <i data-lucide="qr-code" style="width: 14px; height: 14px;"></i> My QR Pass
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="switchMemberTab('workouts')">Workout Split</button>
+                <button class="btn btn-sm btn-secondary" onclick="switchMemberTab('diets')">Nutrition</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coach Details Card -->
+          <div class="card" style="margin-bottom: 32px;">
+            <h3 style="font-size: 1.15rem; color: #FFF; margin-bottom: 16px;">Assigned Master Coach</h3>
+            <div id="member-trainer-info">
+              <div class="skeleton skeleton-card"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             TAB 2: WORKOUT SPLIT
+             ==================================================================== -->
+        <div class="member-tab-content" id="tab-workouts" style="display: none;">
+          <div class="view-toolbar">
+            <div>
+              <h2 style="font-size: 1.5rem; color: #FFF;">Personalized Workout Protocol</h2>
+              <p class="text-muted" style="font-size: 0.88rem;">Designed specifically for your biomechanics and athletic targets</p>
+            </div>
+          </div>
+          <div id="member-workout-view"></div>
+        </div>
+
+        <!-- ====================================================================
+             TAB 3: NUTRITION & DIET
+             ==================================================================== -->
+        <div class="member-tab-content" id="tab-diets" style="display: none;">
+          <div class="view-toolbar">
+            <div>
+              <h2 style="font-size: 1.5rem; color: #FFF;">Diet & Macronutrient Blueprint</h2>
+              <p class="text-muted" style="font-size: 0.88rem;">Fuel your recovery and contractile muscle synthesis</p>
+            </div>
+          </div>
+          <div id="member-diet-view"></div>
+        </div>
+
+        <!-- ====================================================================
+             TAB 4: ATTENDANCE LOG
+             ==================================================================== -->
+        <div class="member-tab-content" id="tab-attendance" style="display: none;">
+          <div class="view-toolbar">
+            <div>
+              <h2 style="font-size: 1.5rem; color: #FFF;">Check-In History & Attendance Log</h2>
+              <p class="text-muted" style="font-size: 0.88rem;">Your personal gym attendance records and workout streak</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Check-In Time</th>
+                    <th>Check-Out Time</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="member-attendance-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             TAB 5: INVOICES & BILLING
+             ==================================================================== -->
+        <div class="member-tab-content" id="tab-billing" style="display: none;">
+          <div class="view-toolbar">
+            <div>
+              <h2 style="font-size: 1.5rem; color: #FFF;">Invoices & Billing History</h2>
+              <p class="text-muted" style="font-size: 0.88rem;">View and print official payment receipts for tax or reimbursement</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice No</th>
+                    <th>Payment Date</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="member-payments-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             TAB 6: PROFILE & SETTINGS
+             ==================================================================== -->
+        <div class="member-tab-content" id="tab-profile" style="display: none;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="card">
+              <h3 style="font-size: 1.25rem; color: #FFF; margin-bottom: 8px;">Contact Information</h3>
+              <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 20px;">Keep your emergency contact and phone number current</p>
+              
+              <form id="member-profile-form" onsubmit="handleMemberProfileUpdate(event)">
+                <div class="form-group">
+                  <label class="form-label" for="mp-phone">Phone Number</label>
+                  <input type="text" name="phone" id="mp-phone" class="form-input" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="mp-emergency">Emergency Contact</label>
+                  <input type="text" name="emergency_contact" id="mp-emergency" class="form-input" placeholder="Name and Phone">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="mp-address">Residential Address</label>
+                  <input type="text" name="address" id="mp-address" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+              </form>
+            </div>
+
+            <div class="card">
+              <h3 style="font-size: 1.25rem; color: #FFF; margin-bottom: 8px;">Security & Password</h3>
+              <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 20px;">Change your member portal password</p>
+
+              <form onsubmit="handleMemberPasswordChange(event)">
+                <div class="form-group">
+                  <label class="form-label" for="mem_current_password">Current Password</label>
+                  <input type="password" name="current_password" id="mem_current_password" class="form-input" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="mem_new_password">New Password</label>
+                  <input type="password" name="new_password" id="mem_new_password" class="form-input" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="mem_confirm_password">Confirm New Password</label>
+                  <input type="password" name="confirm_password" id="mem_confirm_password" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Password</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-overlay" id="modal-member-receipt">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Payment Receipt</h3>
+        <button class="btn-icon" onclick="UI.closeModal('modal-member-receipt')">&times;</button>
+      </div>
+      <div class="modal-body" id="member-receipt-container"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="UI.closeModal('modal-member-receipt')">Close</button>
+        <button class="btn btn-primary" onclick="window.print()">
+          <i data-lucide="printer" style="width: 16px; height: 16px;"></i> Print
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Member My Personal QR Pass -->
+  <div class="modal-overlay" id="modal-member-my-qr-pass">
+    <div class="modal-content" style="max-width: 440px; text-align: center;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 4px;">My Digital Turnstile Pass</h3>
+          <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Show this pass at front desk optical scanner for check-in</p>
+        </div>
+        <button class="btn-icon" onclick="UI.closeModal('modal-member-my-qr-pass')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+        <div class="trainer-digital-badge" style="width: 100%; max-width: 320px;">
+          <div class="badge-brand-mark">APEX &bull; MEMBER ACCESS PASS</div>
+          <img id="my-qr-pass-photo" src="" class="badge-trainer-photo" alt="Member Photo">
+          <div class="badge-trainer-fullname" id="my-qr-pass-name">Loading...</div>
+          <div class="badge-trainer-specialty" id="my-qr-pass-plan">Plan Tier</div>
+          <div class="badge-qr-container" id="my-qr-pass-container"></div>
+          <div class="badge-code-label" id="my-qr-pass-code">APX-0000</div>
+          <div style="margin-top: 10px; font-size: 0.72rem; color: var(--text-muted); font-mono;">Scan for In-Time / Out-Time</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <span class="text-muted" style="font-size: 0.78rem;">
+          <i data-lucide="shield-check" style="width: 13px; height: 13px; display: inline;"></i> Verified Cryptographic ID
+        </span>
+        <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-member-my-qr-pass')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Drawer -->
+  <div class="drawer-overlay" id="member-notif-drawer">
+    <div class="drawer-panel">
+      <div class="modal-header">
+        <h3 style="font-size: 1.2rem;">Notifications</h3>
+        <button class="btn-icon" onclick="UI.closeDrawer('member-notif-drawer')">&times;</button>
+      </div>
+      <div style="padding: 12px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: flex-end;">
+        <button class="btn btn-sm btn-outline" onclick="markAllNotificationsRead()">Mark All Read</button>
+      </div>
+      <div class="modal-body" id="member-notif-list"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/advanced-fx.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/member.js"></script>
+</body>
+</html>

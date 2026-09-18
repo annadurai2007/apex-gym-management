@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APEX HYPER-CLUB — The Sanctuary of High-Performance Fitness</title>
+  <meta name="description" content="Ultra-luxury athletic club combining Olympic Eleiko strength arenas, -110°C cryotherapy recovery vaults, and bespoke human biomechanics.">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- CSS Design System -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/landing.css">
+</head>
+<body>
+
+  <!-- Toast Alerts Container -->
+  <div id="toast-container"></div>
+
+  <!-- Top Privilege Announcement Bar -->
+  <div class="announcement-bar">
+    <div class="announcement-dot"></div>
+    <span>EXCLUSIVE PRIVILEGE MEMBERSHIPS FOR 2026 — <strong>14 ALL-ACCESS PASSES REMAINING THIS QUARTER</strong></span>
+  </div>
+
+  <!-- Floating Glassmorphic Navbar -->
+  <nav class="landing-navbar">
+    <div class="landing-container nav-wrapper">
+      <a href="/" class="brand-logo">
+        <div class="brand-icon">A</div>
+        <div class="brand-text">APEX <span>HYPER-CLUB</span></div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#zones" class="nav-link">Zones</a></li>
+        <li><a href="#memberships" class="nav-link">Memberships</a></li>
+        <li><a href="#coaches" class="nav-link">Coaches</a></li>
+        <li><a href="#transformations" class="nav-link">Results</a></li>
+        <li><a href="#calculator" class="nav-link">Biometrics</a></li>
+        <li><a href="#faq" class="nav-link">FAQ</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="sound-toggle-btn" onclick="SoundFX.toggle()" title="Toggle Interface Audio">
+          <i data-lucide="volume-2" style="width: 14px; height: 14px;"></i> <span class="sound-btn-text">Audio</span>
+        </button>
+        <button class="btn btn-secondary btn-sm nav-kbd-btn" onclick="CommandPalette.open()" title="Quick Command Palette (Ctrl+K)">
+          <i data-lucide="terminal" style="width: 14px; height: 14px;"></i> <span class="palette-kbd-shortcut">Ctrl+K</span>
+        </button>
+        <a href="/login" class="btn btn-outline btn-sm">
+          <i data-lucide="shield" style="width: 14px; height: 14px;"></i> <span class="portal-btn-text">Portal</span>
+        </a>
+        <a href="#vip-pass" class="btn btn-primary btn-sm">
+          VIP Pass
+        </a>
+        <button class="mobile-menu-btn" id="mobile-nav-toggle" aria-label="Toggle navigation">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation Drawer -->
+  <div class="mobile-nav-backdrop" id="mobile-nav-backdrop"></div>
+  <aside class="mobile-nav-drawer" id="mobile-nav-menu">
+    <div class="mobile-drawer-header">
+      <a href="/" class="brand-logo">
+        <div class="brand-icon">A</div>
+        <div class="brand-text">APEX <span>HYPER-CLUB</span></div>
+      </a>
+      <button class="mobile-drawer-close" id="mobile-nav-close" aria-label="Close navigation">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="#zones" class="mobile-nav-link">Facility Zones</a></li>
+      <li><a href="#memberships" class="mobile-nav-link">Memberships</a></li>
+      <li><a href="#coaches" class="mobile-nav-link">Master Coaches</a></li>
+      <li><a href="#transformations" class="mobile-nav-link">Results Data</a></li>
+      <li><a href="#calculator" class="mobile-nav-link">Biometrics</a></li>
+      <li><a href="#faq" class="mobile-nav-link">FAQ</a></li>
+    </ul>
+    <div class="mobile-drawer-actions">
+      <a href="/login" class="btn btn-outline" style="width: 100%;">
+        <i data-lucide="shield" style="width: 16px; height: 16px;"></i> Member Portal
+      </a>
+      <a href="#vip-pass" class="btn btn-primary" style="width: 100%;">
+        Claim VIP Pass
+      </a>
+    </div>
+  </aside>
+
+  <!-- ====================================================================
+       HERO SECTION: EDITORIAL CYBER-LUXURY
+       ==================================================================== -->
+  <header class="hero-editorial">
+    <div class="landing-container hero-editorial-grid">
+      <div class="hero-left-editorial">
+        <!-- Live HUD Telemetry Badge -->
+        <div class="hud-telemetry-badge">
+          <div class="hud-pulse"></div>
+          <span class="hud-text">ARENA STATUS: LIVE &bull; CAPACITY 41% &bull; AIR PURITY 99.9%</span>
+        </div>
+
+        <h1 class="hero-headline-massive">
+          FORGE YOUR <br>
+          <span class="stroke-text">STRONGEST</span> <br>
+          <span class="text-gradient">EVOLUTION</span>
+        </h1>
+
+        <p class="hero-lead-text">
+          A hyper-exclusive sanctuary where Olympic biomechanics meet uncompromising luxury. Eleiko strength coliseums, -110°C cryotherapy vaults, and bespoke human performance protocols.
+        </p>
+
+        <div class="hero-cta-deck">
+          <a href="#memberships" class="btn btn-primary btn-lg">
+            Explore Privileges <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+          </a>
+          <a href="#vip-pass" class="btn btn-secondary btn-lg">
+            Book 1-Day VIP Tour
+          </a>
+        </div>
+
+        <!-- Telemetry Stats Dock -->
+        <div class="telemetry-dock">
+          <div class="dock-item">
+            <div class="dock-label">Arena Capacity</div>
+            <div class="dock-value">41<span>%</span></div>
+          </div>
+          <div class="dock-item">
+            <div class="dock-label">Cryo Chamber</div>
+            <div class="dock-value">-110<span>°C</span></div>
+          </div>
+          <div class="dock-item">
+            <div class="dock-label">Keycard Access</div>
+            <div class="dock-value">24<span>/7</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Right Visual Frame -->
+      <div class="hero-visual-container">
+        <div class="hero-visual-frame">
+          <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1000&q=80" alt="Apex Athletic Coliseum">
+        </div>
+
+        <!-- Floating HUD Overlay -->
+        <div class="hero-hud-card">
+          <div class="hud-metric-pill">
+            <div class="hud-metric-icon">
+              <i data-lucide="zap"></i>
+            </div>
+            <div>
+              <div style="font-weight: 800; color: #FFF; font-size: 0.95rem;">Precision Biometrics</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">Real-time Telemetry & Heart-rate sync</div>
+            </div>
+          </div>
+          <span class="badge badge-lime">IPF Certified</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====================================================================
+       INFINITE BRAND MARQUEE
+       ==================================================================== -->
+  <section class="brand-marquee-section" aria-label="Brand Features">
+    <div class="marquee-track">
+      <div class="marquee-item"><span class="highlight">01</span> OLYMPIC ELEIKO PLATFORMS <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">02</span> -110°C WHOLE BODY CRYOTHERAPY <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">03</span> BESPOKE NUTRITION BLUEPRINTS <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">04</span> WOODWAY CURVED TREADMILLS <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">05</span> INFRARED RECOVERY SAUNAS <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">06</span> PRIVATE CONCIERGE ACCESS <i data-lucide="crosshair"></i></div>
+      <!-- Repeat for seamless continuous loop -->
+      <div class="marquee-item"><span class="highlight">01</span> OLYMPIC ELEIKO PLATFORMS <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">02</span> -110°C WHOLE BODY CRYOTHERAPY <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">03</span> BESPOKE NUTRITION BLUEPRINTS <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">04</span> WOODWAY CURVED TREADMILLS <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">05</span> INFRARED RECOVERY SAUNAS <i data-lucide="crosshair"></i></div>
+      <div class="marquee-item"><span class="highlight">06</span> PRIVATE CONCIERGE ACCESS <i data-lucide="crosshair"></i></div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       INTERACTIVE 360° ZONE EXPLORER
+       ==================================================================== -->
+  <section class="zone-explorer-section" id="zones">
+    <div class="landing-container">
+      <div class="section-header">
+        <span class="section-tag">Interactive Facility Tour</span>
+        <h2 class="section-title">THE SANCTUARY ZONES</h2>
+        <p class="section-desc">Four specialized architectural environments engineered for human elevation.</p>
+      </div>
+
+      <!-- Zone Navigation Tabs -->
+      <div class="zone-nav-tabs">
+        <button class="zone-tab-btn active" data-zone="coliseum">
+          <i data-lucide="dumbbell"></i> The Iron Coliseum
+        </button>
+        <button class="zone-tab-btn" data-zone="cryo">
+          <i data-lucide="flame"></i> Cryo & Cellular Vault
+        </button>
+        <button class="zone-tab-btn" data-zone="cardio">
+          <i data-lucide="activity"></i> Cardio Amphitheater
+        </button>
+        <button class="zone-tab-btn" data-zone="apothecary">
+          <i data-lucide="coffee"></i> Fuel Lounge & Apothecary
+        </button>
+      </div>
+
+      <!-- Active Zone Display Card -->
+      <div class="zone-display-card" id="zone-display-card">
+        <div class="zone-media-viewport">
+          <span class="zone-media-badge"><i data-lucide="eye" style="width: 14px; height: 14px; vertical-align: middle;"></i> LIVE 360 VIEW</span>
+          <img id="zone-img-display" src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=1000&q=80" alt="Zone View">
+        </div>
+
+        <div class="zone-info-panel">
+          <div>
+            <div class="zone-code-tag" id="zone-code-display">ZONE 01 // HEAVY COMPOUND</div>
+            <h3 class="zone-title" id="zone-title-display">The Iron Coliseum</h3>
+            <p class="zone-desc" id="zone-desc-display">
+              Engineered for maximal force production. Featuring 8 competition Eleiko powerlifting platforms, calibrated cast-iron plates, custom monolifts, and dumbbells up to 150 lbs.
+            </p>
+
+            <!-- Dynamic Specs Grid -->
+            <div class="zone-specs-list" id="zone-specs-display">
+              <div>
+                <div class="spec-item-label">Barbells</div>
+                <div class="spec-item-value">Eleiko IPF Certified</div>
+              </div>
+              <div>
+                <div class="spec-item-label">Dumbbells</div>
+                <div class="spec-item-value">5 to 150 lbs</div>
+              </div>
+              <div>
+                <div class="spec-item-label">Platforms</div>
+                <div class="spec-item-value">8 Hardwood Racks</div>
+              </div>
+              <div>
+                <div class="spec-item-label">Specialty Bars</div>
+                <div class="spec-item-value">Safety Squat & Trap</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <a href="#vip-pass" class="btn btn-outline btn-lg" style="width: 100%;">
+              Book Tour of this Zone <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       MEMBERSHIP MATRIX WITH BILLING TOGGLE
+       ==================================================================== -->
+  <section class="plans-section-editorial" id="memberships">
+    <div class="landing-container">
+      <div class="section-header">
+        <span class="section-tag">Tiered Privileges</span>
+        <h2 class="section-title">CHOOSE YOUR ACCESS TIER</h2>
+        <p class="section-desc">Zero initiation fees. All-inclusive luxury access with private locker reservations.</p>
+      </div>
+
+      <!-- Billing Cycle Toggle Switch -->
+      <div class="billing-toggle-wrapper">
+        <div class="billing-pill-container">
+          <button class="billing-opt-btn active" id="billing-monthly-btn">Monthly Billing</button>
+          <button class="billing-opt-btn" id="billing-annual-btn">Annual Pass</button>
+        </div>
+        <span class="savings-tag">SAVE 20% WITH ANNUAL PASS</span>
+      </div>
+
+      <!-- Plans Grid (Dynamically Populated from API with 20% discount math) -->
+      <div class="pricing-grid" id="editorial-plans-container"></div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       MASTER COACHES DOSSIER
+       ==================================================================== -->
+  <section class="section" id="coaches" style="background-color: #0c0f0d;">
+    <div class="landing-container">
+      <div class="section-header">
+        <span class="section-tag">Human Architecture</span>
+        <h2 class="section-title">THE MASTER COACHES</h2>
+        <p class="section-desc">Olympic biomechanists and IFBB professionals committed to your athletic peak.</p>
+      </div>
+
+      <div class="trainers-grid" id="editorial-trainers-container"></div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       TRANSFORMATION DATA DECK
+       ==================================================================== -->
+  <section class="transformation-section" id="transformations">
+    <div class="landing-container">
+      <div class="section-header">
+        <span class="section-tag">Measurable Human Data</span>
+        <h2 class="section-title">PROVEN ADAPTATIONS</h2>
+        <p class="section-desc">Verified biometric shifts recorded using DEXA scans and metabolic telemetry.</p>
+      </div>
+
+      <div class="transformation-grid">
+        <div class="trans-card">
+          <div class="trans-visual-wrapper">
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&q=80" alt="Alex Rivera Transformation">
+            <div class="trans-badge-delta">-14.2 lbs Fat &bull; +6.8 lbs Muscle</div>
+          </div>
+          <div class="trans-body">
+            <h3 class="trans-name">Alex Rivera</h3>
+            <div class="trans-duration">16-Week Hypertrophy Protocol</div>
+            <div class="trans-metrics-row">
+              <div>
+                <div class="trans-metric-val">8.4%</div>
+                <div class="trans-metric-lbl">Body Fat</div>
+              </div>
+              <div>
+                <div class="trans-metric-val">+35 lbs</div>
+                <div class="trans-metric-lbl">Squat Max</div>
+              </div>
+              <div>
+                <div class="trans-metric-val">58 ml/kg</div>
+                <div class="trans-metric-lbl">VO2 Peak</div>
+              </div>
+            </div>
+            <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5;">
+              "Coached by Marcus Vance on progressive overload mechanics. The personalized nutrition plan kept my energy constant through 12-hour workdays."
+            </p>
+          </div>
+        </div>
+
+        <div class="trans-card">
+          <div class="trans-visual-wrapper">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80" alt="Sarah Connor Transformation">
+            <div class="trans-badge-delta">-18.5 lbs Fat &bull; VO2 Max +24%</div>
+          </div>
+          <div class="trans-body">
+            <h3 class="trans-name">Sarah Connor</h3>
+            <div class="trans-duration">12-Week Athletic Shred</div>
+            <div class="trans-metrics-row">
+              <div>
+                <div class="trans-metric-val">14.1%</div>
+                <div class="trans-metric-lbl">Body Fat</div>
+              </div>
+              <div>
+                <div class="trans-metric-val">62 bpm</div>
+                <div class="trans-metric-lbl">Resting HR</div>
+              </div>
+              <div>
+                <div class="trans-metric-val">64 ml/kg</div>
+                <div class="trans-metric-lbl">VO2 Peak</div>
+              </div>
+            </div>
+            <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5;">
+              "Elena Rostova rebuilt my running mechanics and hip mobility. The cryo plunge afterwards virtually eliminated delayed-onset muscle soreness."
+            </p>
+          </div>
+        </div>
+
+        <div class="trans-card">
+          <div class="trans-visual-wrapper">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80" alt="Samantha Hayes Transformation">
+            <div class="trans-badge-delta">+9.4 lbs Contractile Lean Mass</div>
+          </div>
+          <div class="trans-body">
+            <h3 class="trans-name">Samantha Hayes</h3>
+            <div class="trans-duration">24-Week Apex VIP Cycle</div>
+            <div class="trans-metrics-row">
+              <div>
+                <div class="trans-metric-val">16.2%</div>
+                <div class="trans-metric-lbl">Body Fat</div>
+              </div>
+              <div>
+                <div class="trans-metric-val">315 lbs</div>
+                <div class="trans-metric-lbl">Deadlift</div>
+              </div>
+              <div>
+                <div class="trans-metric-val">99%</div>
+                <div class="trans-metric-lbl">Attendance</div>
+              </div>
+            </div>
+            <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5;">
+              "David Chen structured my nutrition to the gram. The portal makes it effortless to check my workout split every morning."
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       INTERACTIVE BIOMETRIC CALCULATOR
+       ==================================================================== -->
+  <section class="section" id="calculator" style="background-color: #090B0A;">
+    <div class="landing-container">
+      <div class="section-header">
+        <span class="section-tag">Science-Backed Assessment</span>
+        <h2 class="section-title">METABOLIC BIOMETRIC ENGINE</h2>
+        <p class="section-desc">Estimate your body mass index and baseline total daily energy expenditure (TDEE).</p>
+      </div>
+
+      <div class="calc-card">
+        <div class="calc-grid">
+          <div>
+            <div class="form-group">
+              <label class="form-label" for="calc-height">Height (Centimeters)</label>
+              <input type="number" id="calc-height" class="form-input" placeholder="e.g. 182" value="180">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="calc-weight">Weight (Kilograms)</label>
+              <input type="number" id="calc-weight" class="form-input" placeholder="e.g. 78" value="78">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="calc-activity">Weekly Athletic Demands</label>
+              <select id="calc-activity" class="form-select">
+                <option value="1.2">Sedentary / Light Office (1-2 days)</option>
+                <option value="1.55" selected>Active Training Split (3-5 days/week)</option>
+                <option value="1.725">Heavy Compound Lifting (6-7 days/week)</option>
+                <option value="1.9">Elite Competitive Athlete</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-lg" id="calc-submit-btn" style="width: 100%;">
+              Run Biometric Analysis <i data-lucide="calculator" style="width: 18px; height: 18px;"></i>
+            </button>
+          </div>
+
+          <div class="calc-result-box">
+            <span class="badge badge-lime font-mono">Biometric Metric</span>
+            <div class="calc-score" id="calc-bmi-val">24.1</div>
+            <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;">
+              Physique Index: <span id="calc-status-val" class="text-lime">Optimal</span>
+            </div>
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+              <div class="text-muted" style="font-size: 0.8rem; text-transform: uppercase;">Maintenance Caloric Baseline</div>
+              <div style="font-size: 1.8rem; font-weight: 800; color: #FFFFFF;" id="calc-calories-val">2,680 kcal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       VIP PASS RESERVATION TERMINAL
+       ==================================================================== -->
+  <section class="vip-reservation-section" id="vip-pass">
+    <div class="landing-container">
+      <div class="vip-terminal-box">
+        <div style="text-align: center; max-width: 600px; margin: 0 auto 40px;">
+          <span class="badge badge-lime" style="margin-bottom: 12px;">Private Access</span>
+          <h2 style="font-size: 2.6rem; color: #FFF; font-weight: 900; line-height: 1.1; margin-bottom: 12px;">
+            RESERVE YOUR 1-DAY VIP PASS
+          </h2>
+          <p class="text-muted" style="font-size: 0.95rem;">
+            Experience the full facility, private cryo recovery chamber, and an athletic biomechanics assessment with our head coach.
+          </p>
+        </div>
+
+        <form id="vip-booking-form">
+          <div class="form-row" style="margin-bottom: 16px;">
+            <div class="form-group">
+              <label class="form-label" for="vip_name">Full Legal Name *</label>
+              <input type="text" name="vip_name" id="vip_name" class="form-input" placeholder="e.g. Jordan Mitchell" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="vip_email">Email Address *</label>
+              <input type="email" name="vip_email" id="vip_email" class="form-input" placeholder="jordan@company.com" required>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom: 24px;">
+            <div class="form-group">
+              <label class="form-label" for="vip_phone">Mobile Number (For Pass SMS) *</label>
+              <input type="tel" name="vip_phone" id="vip_phone" class="form-input" placeholder="+1 (555) 000-0000" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="vip_date">Preferred Visit Date *</label>
+              <input type="date" name="vip_date" id="vip_date" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="vip_experience">Desired Focus</label>
+              <select name="vip_experience" id="vip_experience" class="form-select">
+                <option value="strength">Heavy Compound Lifting</option>
+                <option value="recovery">Cryo & Infrared Contrast</option>
+                <option value="coaching">Master Coach Assessment</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+            Confirm VIP Day-Pass Reservation <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       INTERACTIVE FAQ ACCORDION
+       ==================================================================== -->
+  <section class="faq-section" id="faq">
+    <div class="landing-container">
+      <div class="section-header">
+        <span class="section-tag">Clarity & Protocol</span>
+        <h2 class="section-title">FREQUENTLY ASKED QUESTIONS</h2>
+        <p class="section-desc">Details regarding access privileges, guest allowances, and coaching.</p>
+      </div>
+
+      <div class="faq-accordion-list">
+        <div class="faq-accordion-item active">
+          <button class="faq-trigger-btn">
+            <span>What are the keycard access hours for members?</span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="faq-answer-panel">
+            <p class="faq-answer-text">
+              Platinum Elite and Apex Black VIP members enjoy 24/7 unlimited access to all arenas and locker facilities via biometric keycard. General facility access for Silver and Gold tiers runs from 05:00 AM to 11:00 PM on weekdays, and 06:00 AM to 10:00 PM on weekends.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-accordion-item">
+          <button class="faq-trigger-btn">
+            <span>Can I bring guests or training partners?</span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="faq-answer-panel">
+            <p class="faq-answer-text">
+              Yes. Platinum Elite members receive 2 complimentary VIP guest day passes every calendar month, while Apex Black VIP members receive unlimited guest privileges with 24-hour advance concierge notice.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-accordion-item">
+          <button class="faq-trigger-btn">
+            <span>How does the sub-zero cryotherapy vault work?</span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="faq-answer-panel">
+            <p class="faq-answer-text">
+              Our electric sub-zero chamber operates at a calibrated -110°C (-166°F). A certified recovery specialist conducts each 3-minute session to trigger peripheral vasoconstriction, dramatically reduce joint inflammation, and boost mitochondrial recovery.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-accordion-item">
+          <button class="faq-trigger-btn">
+            <span>How are personal workout and diet plans assigned?</span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="faq-answer-panel">
+            <p class="faq-answer-text">
+              Upon joining, our master coaching staff performs a dynamic movement screen and body composition analysis. Your personalized weekly training split and macronutrient meal timetable are immediately published directly to your member portal.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       EDITORIAL FOOTER
+       ==================================================================== -->
+  <footer class="landing-footer">
+    <div class="landing-container">
+      <div class="footer-grid">
+        <div>
+          <a href="/" class="brand-logo" style="margin-bottom: 16px;">
+            <div class="brand-icon">A</div>
+            <div class="brand-text">APEX <span>HYPER-CLUB</span></div>
+          </a>
+          <p class="text-muted" style="font-size: 0.9rem; max-width: 300px; line-height: 1.6;">
+            The world's premier athletic sanctuary engineered for high-performance strength, cellular recovery, and human elevation.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Sanctuary Zones</h4>
+          <ul class="footer-links">
+            <li><a href="#zones" class="footer-link">The Iron Coliseum</a></li>
+            <li><a href="#zones" class="footer-link">Cryo & Cellular Vault</a></li>
+            <li><a href="#zones" class="footer-link">Cardio Amphitheater</a></li>
+            <li><a href="#zones" class="footer-link">Fuel Lounge & Apothecary</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Privileges & Portals</h4>
+          <ul class="footer-links">
+            <li><a href="/login" class="footer-link">Member Portal Sign In</a></li>
+            <li><a href="/login" class="footer-link">Master Coach Desk</a></li>
+            <li><a href="/login" class="footer-link">Administrator Console</a></li>
+            <li><a href="#vip-pass" class="footer-link">Request VIP Day-Pass</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Private Inquiries</h4>
+          <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">
+            Level 4, Apex Tower, 100 Olympic Boulevard, Financial District <br>
+            Direct: +1 (800) 555-APEX <br>
+            Email: concierge@apexgym.com
+          </p>
+          <span class="badge badge-lime">Club Open 24/7</span>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 APEX HYPER-CLUB. All Rights Reserved.</div>
+        <div style="display: flex; gap: 24px;">
+          <a href="#" class="footer-link">Privacy Standards</a>
+          <a href="#" class="footer-link">Membership Bylaws</a>
+          <a href="#" class="footer-link">Biometric Security</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/advanced-fx.js"></script>
+  <script src="/js/landing.js"></script>
+</body>
+</html>

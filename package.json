@@ -1,0 +1,24 @@
+{
+  "name": "apex-gym-management-system",
+  "version": "1.0.0",
+  "description": "Premium Luxury Gym Management System — Full Stack Architecture",
+  "main": "dev-server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node dev-server.js",
+    "dev": "node dev-server.js",
+    "py-start": "python run.py",
+    "init-db": "python run.py --init-db",
+    "test": "python tests/test_system.py"
+  },
+  "keywords": [
+    "gym-management",
+    "fitness",
+    "flask",
+    "mysql",
+    "chartjs",
+    "luxury-ui"
+  ],
+  "author": "Apex Engineering Team",
+  "license": "MIT"
+}
