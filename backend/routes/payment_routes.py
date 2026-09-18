@@ -1,7 +1,7 @@
 import datetime
 from flask import Blueprint, request
 from backend.database import query_db
-from backend.utils.auth_middleware import token_required, role_required
+from backend.utils.auth_middleware import token_required, role_required, permission_required, has_permission
 from backend.utils.helpers import success_response, error_response, generate_invoice_no
 
 payment_bp = Blueprint('payments', __name__, url_prefix='/api/payments')
@@ -11,6 +11,10 @@ payment_bp = Blueprint('payments', __name__, url_prefix='/api/payments')
 def list_payments():
     """List payments with filters, search, and pagination."""
     user = request.current_user
+
+    if user['role'] != 'member' and not has_permission(user['role'], 'payments:view'):
+        return error_response('Access denied. Missing permission: payments:view', status_code=403)
+
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 15))
     offset = (page - 1) * limit
@@ -105,6 +109,8 @@ def get_receipt(payment_id):
         member_rec = query_db("SELECT id FROM members WHERE user_id = %s", (request.current_user['id'],), one=True)
         if not member_rec or member_rec['id'] != payment['member_id']:
             return error_response('Access forbidden', status_code=403)
+    elif not has_permission(request.current_user['role'], 'payments:view'):
+        return error_response('Access denied. Missing permission: payments:view', status_code=403)
 
     receipt = {
         'gym_info': {
@@ -122,7 +128,7 @@ def get_receipt(payment_id):
 
 @payment_bp.route('', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('payments:create')
 def record_payment():
     """Record manual payment or offline dues settlement."""
     data = request.get_json(silent=True) or {}

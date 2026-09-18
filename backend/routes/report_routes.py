@@ -2,14 +2,14 @@ import io
 import csv
 from flask import Blueprint, request, make_response
 from backend.database import query_db
-from backend.utils.auth_middleware import token_required, role_required
+from backend.utils.auth_middleware import token_required, role_required, permission_required
 from backend.utils.helpers import success_response
 
 report_bp = Blueprint('reports', __name__, url_prefix='/api/reports')
 
 @report_bp.route('/summary', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('reports:view')
 def get_reports_summary():
     """Retrieve aggregate performance summary."""
     revenue_by_method = query_db("""
@@ -54,7 +54,7 @@ def get_reports_summary():
 
 @report_bp.route('/export/payments', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('reports:export')
 def export_payments_csv():
     """Export payments database to downloadable CSV."""
     payments = query_db("""
@@ -82,7 +82,7 @@ def export_payments_csv():
 
 @report_bp.route('/export/attendance', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('reports:export')
 def export_attendance_csv():
     """Export attendance database to downloadable CSV."""
     records = query_db("""

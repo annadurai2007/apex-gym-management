@@ -1,7 +1,7 @@
 import datetime
 from flask import Blueprint, request
 from backend.database import query_db
-from backend.utils.auth_middleware import token_required, role_required
+from backend.utils.auth_middleware import token_required, role_required, permission_required
 from backend.utils.helpers import success_response, error_response
 
 diet_bp = Blueprint('diets', __name__, url_prefix='/api/diets')
@@ -48,7 +48,7 @@ def get_diet_plan(plan_id):
 
 @diet_bp.route('', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('diets:manage')
 def create_diet_plan():
     """Create a new diet plan template with meal schedules."""
     data = request.get_json(silent=True) or {}
@@ -97,7 +97,7 @@ def create_diet_plan():
 
 @diet_bp.route('/assign', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('diets:manage')
 def assign_diet():
     """Assign a diet plan to a member."""
     data = request.get_json(silent=True) or {}

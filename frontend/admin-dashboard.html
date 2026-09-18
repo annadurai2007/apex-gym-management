@@ -42,49 +42,53 @@
           <span class="nav-item-icon"><i data-lucide="layout-dashboard"></i></span>
           <span class="nav-item-label">Overview</span>
         </a>
-        <a class="nav-item" data-view="attendance">
+        <a class="nav-item" data-view="attendance" data-permission="attendance:view">
           <span class="nav-item-icon"><i data-lucide="user-check"></i></span>
           <span class="nav-item-label">Attendance Desk</span>
         </a>
-        <a class="nav-item" data-view="trainer-attendance">
+        <a class="nav-item" data-view="trainer-attendance" data-permission="trainer_attendance:manage">
           <span class="nav-item-icon"><i data-lucide="qr-code"></i></span>
           <span class="nav-item-label">Trainer QR Desk</span>
         </a>
-        <a class="nav-item" data-view="members">
+        <a class="nav-item" data-view="members" data-permission="members:view">
           <span class="nav-item-icon"><i data-lucide="users"></i></span>
           <span class="nav-item-label">Members</span>
         </a>
-        <a class="nav-item" data-view="trainers">
+        <a class="nav-item" data-view="trainers" data-permission="trainers:view">
           <span class="nav-item-icon"><i data-lucide="award"></i></span>
           <span class="nav-item-label">Trainers</span>
         </a>
 
         <div class="nav-category">Subscriptions & Billing</div>
-        <a class="nav-item" data-view="plans">
+        <a class="nav-item" data-view="plans" data-permission="plans:view">
           <span class="nav-item-icon"><i data-lucide="shield"></i></span>
           <span class="nav-item-label">Membership Plans</span>
         </a>
-        <a class="nav-item" data-view="payments">
+        <a class="nav-item" data-view="payments" data-permission="payments:view">
           <span class="nav-item-icon"><i data-lucide="credit-card"></i></span>
           <span class="nav-item-label">Payments & Dues</span>
         </a>
 
         <div class="nav-category">Performance Blueprints</div>
-        <a class="nav-item" data-view="workouts">
+        <a class="nav-item" data-view="workouts" data-permission="workouts:view">
           <span class="nav-item-icon"><i data-lucide="dumbbell"></i></span>
           <span class="nav-item-label">Workout Routines</span>
         </a>
-        <a class="nav-item" data-view="diets">
+        <a class="nav-item" data-view="diets" data-permission="diets:view">
           <span class="nav-item-icon"><i data-lucide="utensils"></i></span>
           <span class="nav-item-label">Diet Blueprints</span>
         </a>
 
         <div class="nav-category">Analytics & System</div>
-        <a class="nav-item" data-view="reports">
+        <a class="nav-item" data-view="reports" data-permission="reports:view">
           <span class="nav-item-icon"><i data-lucide="bar-chart-3"></i></span>
           <span class="nav-item-label">Reports & Exports</span>
         </a>
-        <a class="nav-item" data-view="settings">
+        <a class="nav-item" data-view="permissions" data-permission="roles:manage">
+          <span class="nav-item-icon"><i data-lucide="shield-check"></i></span>
+          <span class="nav-item-label">Role Permissions</span>
+        </a>
+        <a class="nav-item" data-view="settings" data-permission="roles:manage">
           <span class="nav-item-icon"><i data-lucide="settings"></i></span>
           <span class="nav-item-label">Settings</span>
         </a>
@@ -1009,7 +1013,78 @@
         </div>
 
         <!-- ====================================================================
-             10. SETTINGS VIEW
+             10. ROLE PERMISSIONS MATRIX VIEW
+             ==================================================================== -->
+        <div class="view-section" id="view-permissions" style="display: none;">
+          <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+            <div>
+              <h2 style="font-size: 1.6rem; color: #FFF; font-weight: 800; letter-spacing: -0.5px; margin: 0 0 6px;">
+                Role Permissions <span class="text-lime">Matrix</span>
+              </h2>
+              <p class="text-muted" style="margin: 0; font-size: 0.9rem;">
+                Configure granular system capabilities and module access levels across Staff, Coaches, and Members.
+              </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button class="btn btn-secondary btn-sm" onclick="PermissionsModule.resetToDefaults()" id="btn-reset-permissions">
+                <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Reset Defaults
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="PermissionsModule.saveChanges()" id="btn-save-permissions">
+                <i data-lucide="save" style="width: 14px; height: 14px;"></i> Save Matrix Changes
+              </button>
+            </div>
+          </div>
+
+          <!-- Alert / Status Notice -->
+          <div style="background: rgba(198, 255, 0, 0.05); border: 1px solid rgba(198, 255, 0, 0.2); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="shield-check" style="color: var(--accent-lime); width: 24px; height: 24px; flex-shrink: 0;"></i>
+              <div>
+                <span style="color: #FFF; font-weight: 600; font-size: 0.9rem;">Root Superuser & System Guard</span>
+                <p style="color: var(--text-muted); font-size: 0.8rem; margin: 2px 0 0;">
+                  Admin privileges remain locked as superuser to ensure governance integrity. Changes take effect on next login.
+                </p>
+              </div>
+            </div>
+            <span class="badge badge-success" style="font-family: var(--font-mono); font-size: 0.75rem;">RBAC v2.0 ACTIVE</span>
+          </div>
+
+          <!-- Permissions Matrix Table Container -->
+          <div class="card" style="padding: 0; overflow: hidden; border: 1px solid var(--border-subtle); margin-bottom: 30px;">
+            <div class="table-responsive">
+              <table class="data-table" style="margin: 0; width: 100%;">
+                <thead>
+                  <tr style="background: rgba(255,255,255,0.02);">
+                    <th style="width: 44%; padding: 14px 18px;">Capability & Key</th>
+                    <th style="width: 14%; text-align: center; padding: 14px 12px;">
+                      <span class="badge badge-danger" style="font-size: 0.72rem; letter-spacing: 0.05em;">ADMIN</span>
+                    </th>
+                    <th style="width: 14%; text-align: center; padding: 14px 12px;">
+                      <span class="badge badge-warning" style="font-size: 0.72rem; letter-spacing: 0.05em;">STAFF</span>
+                    </th>
+                    <th style="width: 14%; text-align: center; padding: 14px 12px;">
+                      <span class="badge badge-info" style="font-size: 0.72rem; letter-spacing: 0.05em;">TRAINER</span>
+                    </th>
+                    <th style="width: 14%; text-align: center; padding: 14px 12px;">
+                      <span class="badge badge-secondary" style="font-size: 0.72rem; letter-spacing: 0.05em;">MEMBER</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="permissions-matrix-tbody">
+                  <tr>
+                    <td colspan="5" class="text-center text-muted" style="padding: 40px;">
+                      <i data-lucide="loader" class="spin" style="width: 20px; height: 20px; display: inline-block; margin-right: 8px;"></i>
+                      Loading permission matrix...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================================
+             11. SETTINGS VIEW
              ==================================================================== -->
         <div class="view-section" id="view-settings" style="display: none;">
           <div class="card" style="max-width: 600px;">

@@ -263,3 +263,16 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 CREATE INDEX IF NOT EXISTS idx_notif_user_read ON notifications(user_id, is_read);
+
+-- 16. Role Permissions Table (Granular Access Control)
+CREATE TABLE IF NOT EXISTS role_permissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    role TEXT NOT NULL CHECK (role IN ('admin', 'staff', 'trainer', 'member')),
+    permission_key TEXT NOT NULL,
+    is_granted INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (role, permission_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_role_perm ON role_permissions(role, is_granted);

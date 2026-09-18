@@ -259,3 +259,15 @@ CREATE TABLE IF NOT EXISTS `notifications` (
     CONSTRAINT `fk_notif_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     INDEX `idx_notif_user_read` (`user_id`, `is_read`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 16. Role Permissions Table (Granular Access Control)
+CREATE TABLE IF NOT EXISTS `role_permissions` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `role` ENUM('admin', 'staff', 'trainer', 'member') NOT NULL,
+    `permission_key` VARCHAR(100) NOT NULL,
+    `is_granted` BOOLEAN NOT NULL DEFAULT TRUE,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_role_permission` (`role`, `permission_key`),
+    INDEX `idx_role_perm` (`role`, `is_granted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

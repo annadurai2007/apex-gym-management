@@ -107,10 +107,10 @@ def _ensure_sqlite_ready():
         try:
             conn = sqlite3.connect(db_path)
             cur = conn.cursor()
-            cur.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='users';")
+            cur.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='role_permissions';")
             exists = cur.fetchone()[0]
             if exists:
-                cur.execute("SELECT count(*) FROM users;")
+                cur.execute("SELECT count(*) FROM role_permissions;")
                 count = cur.fetchone()[0]
                 if count > 0:
                     needs_init = False

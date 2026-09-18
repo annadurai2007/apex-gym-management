@@ -39,7 +39,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 /* --------------------------------------------------------------------------
    NAVIGATION & VIEW ROUTING
 --------------------------------------------------------------------------- */
+function filterNavigationByPermissions() {
+  const user = Auth.getUser();
+  if (!user) return;
+  const isSuperAdmin = user.role === 'admin';
+
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    const requiredPermission = item.getAttribute('data-permission');
+    if (!requiredPermission || isSuperAdmin) {
+      item.style.display = '';
+    } else {
+      const allowed = Auth.hasPermission(requiredPermission);
+      item.style.display = allowed ? '' : 'none';
+    }
+  });
+
+  // Clean up category headers if all child items are hidden
+  document.querySelectorAll('.sidebar-nav .nav-category').forEach(cat => {
+    let nextEl = cat.nextElementSibling;
+    let hasVisibleSibling = false;
+    while (nextEl && !nextEl.classList.contains('nav-category')) {
+      if (nextEl.classList.contains('nav-item') && nextEl.style.display !== 'none') {
+        hasVisibleSibling = true;
+        break;
+      }
+      nextEl = nextEl.nextElementSibling;
+    }
+    cat.style.display = hasVisibleSibling ? '' : 'none';
+  });
+}
+
 function setupNavigation() {
+  filterNavigationByPermissions();
+
   const navItems = document.querySelectorAll('.sidebar-nav .nav-item[data-view]');
   navItems.forEach(item => {
     item.addEventListener('click', (e) => {
@@ -91,6 +123,21 @@ function setupSidebarToggle() {
 }
 
 function switchView(viewName) {
+  // Permission guard for restricted views
+  const user = Auth.getUser();
+  const isSuperAdmin = user && user.role === 'admin';
+  const targetNav = document.querySelector(`.sidebar-nav .nav-item[data-view="${viewName}"]`);
+  if (targetNav && !isSuperAdmin) {
+    const reqPerm = targetNav.getAttribute('data-permission');
+    if (reqPerm && !Auth.hasPermission(reqPerm)) {
+      UI.showToast(`Access Restricted: Missing capability '${reqPerm}'`, 'warning');
+      if (viewName !== 'overview') {
+        switchView('overview');
+      }
+      return;
+    }
+  }
+
   AdminState.currentView = viewName;
 
   // Auto-close mobile drawer on view switch
@@ -122,6 +169,7 @@ function switchView(viewName) {
     workouts: 'Workout Routine Templates',
     diets: 'Nutrition & Diet Blueprints',
     reports: 'Business Reports & CSV Exports',
+    permissions: 'Role Permissions Matrix',
     settings: 'System & Profile Settings'
   };
   const titleEl = document.getElementById('current-page-title');
@@ -173,6 +221,9 @@ function switchView(viewName) {
       break;
     case 'reports':
       loadReportsView();
+      break;
+    case 'permissions':
+      PermissionsModule.load();
       break;
     case 'settings':
       loadSettingsView();
@@ -2529,3 +2580,237 @@ async function openTrainerBadgesModal() {
 function printTrainerBadges() {
   window.print();
 }
+
+/* ==========================================================================
+   ROLE PERMISSIONS MATRIX CONTROLLER
+   ========================================================================== */
+const PermissionsModule = {
+  definitions: [],
+  matrix: { staff: [], trainer: [], member: [] },
+  pendingChanges: { staff: {}, trainer: {}, member: {} },
+
+  async load() {
+    const tbody = document.getElementById('permissions-matrix-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center text-muted" style="padding: 40px;">
+          <div class="spinner" style="margin: 0 auto 12px;"></div>
+          Loading permissions matrix...
+        </td>
+      </tr>
+    `;
+
+    try {
+      const res = await apiFetch('/auth/permissions');
+      if (!res.success) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger" style="padding: 30px;">Failed to load permissions: ${res.message}</td></tr>`;
+        return;
+      }
+
+      this.definitions = res.data.definitions || [];
+      this.matrix = res.data.matrix || { staff: [], trainer: [], member: [] };
+      this.pendingChanges = { staff: {}, trainer: {}, member: {} };
+      this.render();
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger" style="padding: 30px;">Error loading permissions: ${err.message}</td></tr>`;
+    }
+  },
+
+  render() {
+    const tbody = document.getElementById('permissions-matrix-tbody');
+    if (!tbody) return;
+
+    // Group definitions by category
+    const grouped = {};
+    this.definitions.forEach(perm => {
+      const cat = perm.category || 'General';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(perm);
+    });
+
+    let html = '';
+    const user = Auth.getUser();
+    const isAdmin = user && user.role === 'admin';
+
+    for (const [category, perms] of Object.entries(grouped)) {
+      html += `
+        <tr class="perm-category-header">
+          <td colspan="5" style="padding: 10px 18px;">
+            <i data-lucide="layers" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>
+            ${category}
+          </td>
+        </tr>
+      `;
+
+      perms.forEach(p => {
+        const staffChecked = this.isGranted('staff', p.key);
+        const trainerChecked = this.isGranted('trainer', p.key);
+        const memberChecked = this.isGranted('member', p.key);
+        const disabledAttr = isAdmin ? '' : 'disabled';
+
+        html += `
+          <tr style="border-bottom: 1px solid var(--border-subtle);">
+            <td style="padding: 14px 18px;">
+              <div style="font-weight: 600; color: #FFF; font-size: 0.9rem;">
+                ${p.name}
+                <span class="perm-key-badge">${p.key}</span>
+              </div>
+              <div class="perm-desc">${p.desc || ''}</div>
+            </td>
+
+            <!-- Admin (Always Full Superuser) -->
+            <td style="text-align: center; vertical-align: middle; padding: 12px;">
+              <div class="perm-locked-cell" title="Root Admin privileges are permanently active">
+                <i data-lucide="check-circle-2" style="width: 18px; height: 18px; color: var(--accent-primary);"></i>
+                <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-secondary);">ROOT</span>
+              </div>
+            </td>
+
+            <!-- Staff -->
+            <td style="text-align: center; vertical-align: middle; padding: 12px;">
+              <label class="perm-switch" title="Staff permission toggle">
+                <input type="checkbox" ${staffChecked ? 'checked' : ''} ${disabledAttr}
+                  onchange="PermissionsModule.toggle('staff', '${p.key}', this.checked)"
+                  data-role="staff" data-key="${p.key}">
+                <span class="perm-slider"></span>
+              </label>
+            </td>
+
+            <!-- Trainer -->
+            <td style="text-align: center; vertical-align: middle; padding: 12px;">
+              <label class="perm-switch" title="Trainer permission toggle">
+                <input type="checkbox" ${trainerChecked ? 'checked' : ''} ${disabledAttr}
+                  onchange="PermissionsModule.toggle('trainer', '${p.key}', this.checked)"
+                  data-role="trainer" data-key="${p.key}">
+                <span class="perm-slider"></span>
+              </label>
+            </td>
+
+            <!-- Member -->
+            <td style="text-align: center; vertical-align: middle; padding: 12px;">
+              <label class="perm-switch" title="Member permission toggle">
+                <input type="checkbox" ${memberChecked ? 'checked' : ''} ${disabledAttr}
+                  onchange="PermissionsModule.toggle('member', '${p.key}', this.checked)"
+                  data-role="member" data-key="${p.key}">
+                <span class="perm-slider"></span>
+              </label>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    tbody.innerHTML = html;
+    UI.refreshIcons();
+  },
+
+  isGranted(role, key) {
+    if (this.pendingChanges[role] && this.pendingChanges[role][key] !== undefined) {
+      return this.pendingChanges[role][key];
+    }
+    const currentList = this.matrix[role] || [];
+    return currentList.includes(key);
+  },
+
+  toggle(role, key, isGranted) {
+    if (!this.pendingChanges[role]) this.pendingChanges[role] = {};
+    this.pendingChanges[role][key] = isGranted;
+  },
+
+  async saveChanges() {
+    const user = Auth.getUser();
+    if (!user || user.role !== 'admin') {
+      UI.showToast('Only administrators can update the permissions matrix', 'error');
+      return;
+    }
+
+    const updates = [];
+    for (const role of ['staff', 'trainer', 'member']) {
+      const roleChanges = this.pendingChanges[role] || {};
+      for (const [key, isGranted] of Object.entries(roleChanges)) {
+        updates.push({ role, permission_key: key, is_granted: isGranted });
+      }
+    }
+
+    if (updates.length === 0) {
+      UI.showToast('No permission changes have been made.', 'info');
+      return;
+    }
+
+    const btn = document.getElementById('btn-save-permissions');
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await apiFetch('/auth/permissions', {
+        method: 'PUT',
+        body: JSON.stringify({ updates })
+      });
+
+      if (res.success) {
+        UI.showToast(`Permissions updated: ${res.data.updated_count} policy rules saved.`, 'success');
+        await this.load();
+      } else {
+        UI.showToast(res.message || 'Failed to update permissions', 'error');
+      }
+    } catch (err) {
+      UI.showToast(`Error saving matrix: ${err.message}`, 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  },
+
+  async resetToDefaults() {
+    const user = Auth.getUser();
+    if (!user || user.role !== 'admin') {
+      UI.showToast('Only administrators can reset permissions', 'error');
+      return;
+    }
+
+    const confirmed = await UI.confirm(
+      'Reset Permissions',
+      'Reset Staff, Trainer, and Member access permissions back to system defaults?',
+      'Reset Defaults',
+      true
+    );
+    if (!confirmed) return;
+
+    const defaultStaff = [
+      "members:view", "members:create", "members:edit",
+      "attendance:view", "attendance:checkin", "attendance:checkout", "attendance:edit", "badges:view",
+      "trainers:view", "trainer_attendance:manage",
+      "plans:view", "payments:view", "payments:create",
+      "workouts:view", "diets:view"
+    ];
+    const defaultTrainer = [
+      "members:view", "attendance:view", "attendance:checkin", "attendance:checkout", "badges:view",
+      "trainers:view", "trainer_attendance:manage",
+      "plans:view", "workouts:view", "workouts:manage",
+      "diets:view", "diets:manage"
+    ];
+    const defaultMember = [];
+
+    const updates = [];
+    this.definitions.forEach(p => {
+      updates.push({ role: 'staff', permission_key: p.key, is_granted: defaultStaff.includes(p.key) });
+      updates.push({ role: 'trainer', permission_key: p.key, is_granted: defaultTrainer.includes(p.key) });
+      updates.push({ role: 'member', permission_key: p.key, is_granted: defaultMember.includes(p.key) });
+    });
+
+    try {
+      const res = await apiFetch('/auth/permissions', {
+        method: 'PUT',
+        body: JSON.stringify({ updates })
+      });
+      if (res.success) {
+        UI.showToast('Role permissions matrix restored to defaults.', 'success');
+        await this.load();
+      } else {
+        UI.showToast(res.message || 'Reset failed', 'error');
+      }
+    } catch (err) {
+      UI.showToast(`Reset error: ${err.message}`, 'error');
+    }
+  }
+};
+

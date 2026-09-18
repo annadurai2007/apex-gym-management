@@ -24,6 +24,16 @@ const Auth = {
     return user ? user.role : null;
   },
 
+  hasPermission(permissionKey) {
+    const user = this.getUser();
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (Array.isArray(user.permissions)) {
+      return user.permissions.includes(permissionKey);
+    }
+    return false;
+  },
+
   setSession(token, user) {
     localStorage.setItem(CONFIG.STORAGE_TOKEN_KEY, token);
     localStorage.setItem(CONFIG.STORAGE_USER_KEY, JSON.stringify(user));

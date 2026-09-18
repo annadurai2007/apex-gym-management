@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from werkzeug.security import check_password_hash, generate_password_hash
 from backend.database import query_db
-from backend.utils.auth_middleware import generate_jwt_token, token_required
+from backend.utils.auth_middleware import generate_jwt_token, token_required, get_role_permissions
 from backend.utils.helpers import success_response, error_response
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -52,13 +52,15 @@ def login():
         )
 
     token = generate_jwt_token(user)
+    permissions = get_role_permissions(user['role'])
 
     user_info = {
         'id': user['id'],
         'email': user['email'],
         'role': user['role'],
         'status': user['status'],
-        'profile': profile
+        'profile': profile,
+        'permissions': permissions
     }
 
     return success_response(
@@ -95,16 +97,80 @@ def get_current_user():
             one=True
         )
 
+    permissions = get_role_permissions(user['role'])
+
     return success_response(
         data={
             'id': user['id'],
             'email': user['email'],
             'role': user['role'],
             'status': user['status'],
-            'profile': profile
+            'profile': profile,
+            'permissions': permissions
         },
         message='Profile loaded'
     )
+
+@auth_bp.route('/permissions', methods=['GET'])
+@token_required
+def get_permissions():
+    """Retrieve all available permissions and current role assignments."""
+    from backend.utils.auth_middleware import ALL_PERMISSIONS
+    
+    # Query matrix from database
+    rows = query_db("SELECT role, permission_key, is_granted FROM role_permissions")
+    matrix = {'admin': {}, 'staff': {}, 'trainer': {}, 'member': {}}
+    for r in rows:
+        matrix.setdefault(r['role'], {})[r['permission_key']] = bool(r['is_granted'])
+
+    # Ensure admin has all permissions as True
+    for p in ALL_PERMISSIONS:
+        matrix['admin'][p['key']] = True
+
+    return success_response(
+        data={
+            'definitions': ALL_PERMISSIONS,
+            'matrix': matrix,
+            'user_permissions': get_role_permissions(request.current_user['role'])
+        },
+        message='Permissions matrix retrieved'
+    )
+
+@auth_bp.route('/permissions', methods=['PUT'])
+@token_required
+def update_permissions():
+    """Update role permissions matrix (Admin Only)."""
+    if request.current_user['role'] != 'admin':
+        return error_response('Only administrators can configure role permissions', status_code=403)
+
+    data = request.get_json(silent=True) or {}
+    matrix = data.get('matrix') or {}
+
+    for role, perms in matrix.items():
+        if role not in ('staff', 'trainer', 'member'):
+            continue  # Admin permissions cannot be altered
+
+        for perm_key, is_granted in perms.items():
+            val = 1 if is_granted else 0
+            existing = query_db(
+                "SELECT id FROM role_permissions WHERE role = %s AND permission_key = %s",
+                (role, perm_key),
+                one=True
+            )
+            if existing:
+                query_db(
+                    "UPDATE role_permissions SET is_granted = %s WHERE id = %s",
+                    (val, existing['id']),
+                    commit=True
+                )
+            else:
+                query_db(
+                    "INSERT INTO role_permissions (role, permission_key, is_granted) VALUES (%s, %s, %s)",
+                    (role, perm_key, val),
+                    commit=True
+                )
+
+    return success_response(message='Role permissions updated successfully')
 
 @auth_bp.route('/change-password', methods=['POST'])
 @token_required

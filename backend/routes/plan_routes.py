@@ -1,7 +1,7 @@
 import json
 from flask import Blueprint, request
 from backend.database import query_db
-from backend.utils.auth_middleware import token_required, role_required
+from backend.utils.auth_middleware import token_required, role_required, permission_required
 from backend.utils.helpers import success_response, error_response
 
 plan_bp = Blueprint('plans', __name__, url_prefix='/api/plans')
@@ -46,7 +46,7 @@ def get_plan(plan_id):
 
 @plan_bp.route('', methods=['POST'])
 @token_required
-@role_required(['admin'])
+@permission_required('plans:manage')
 def create_plan():
     """Create a new membership plan."""
     data = request.get_json(silent=True) or {}
@@ -78,7 +78,7 @@ def create_plan():
 
 @plan_bp.route('/<int:plan_id>', methods=['PUT'])
 @token_required
-@role_required(['admin'])
+@permission_required('plans:manage')
 def update_plan(plan_id):
     """Update existing membership plan."""
     data = request.get_json(silent=True) or {}

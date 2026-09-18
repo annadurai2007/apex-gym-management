@@ -1,7 +1,7 @@
 import datetime
 from flask import Blueprint, request
 from backend.database import query_db
-from backend.utils.auth_middleware import token_required, role_required
+from backend.utils.auth_middleware import token_required, role_required, permission_required
 from backend.utils.helpers import success_response, error_response
 
 workout_bp = Blueprint('workouts', __name__, url_prefix='/api/workouts')
@@ -14,7 +14,7 @@ def list_workout_plans():
         SELECT wp.*, t.full_name as trainer_name
         FROM workout_plans wp
         LEFT JOIN trainers t ON wp.created_by_trainer_id = t.id
-        ORDER BY wp.id ASC
+        ORDER BY wp.id DESC
     """)
 
     for plan in plans:
@@ -30,7 +30,7 @@ def list_workout_plans():
 @workout_bp.route('/<int:plan_id>', methods=['GET'])
 @token_required
 def get_workout_plan(plan_id):
-    """Get single workout plan details with exercises."""
+    """Get single workout plan details with grouped exercises."""
     plan = query_db("""
         SELECT wp.*, t.full_name as trainer_name
         FROM workout_plans wp
@@ -47,7 +47,7 @@ def get_workout_plan(plan_id):
         ORDER BY FIELD(day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), order_seq ASC
     """, (plan_id,))
 
-    # Group exercises by day of week
+    # Group exercises by day
     grouped = {}
     for ex in exercises:
         day = ex['day_of_week']
@@ -62,7 +62,7 @@ def get_workout_plan(plan_id):
 
 @workout_bp.route('', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('workouts:manage')
 def create_workout_plan():
     """Create a new workout routine template with exercises."""
     data = request.get_json(silent=True) or {}
@@ -109,7 +109,7 @@ def create_workout_plan():
 
 @workout_bp.route('/assign', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('workouts:manage')
 def assign_workout():
     """Assign a workout plan to a member."""
     data = request.get_json(silent=True) or {}

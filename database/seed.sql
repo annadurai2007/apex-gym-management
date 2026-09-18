@@ -22,6 +22,7 @@ TRUNCATE TABLE `memberships`;
 TRUNCATE TABLE `members`;
 TRUNCATE TABLE `membership_plans`;
 TRUNCATE TABLE `trainers`;
+TRUNCATE TABLE `role_permissions`;
 TRUNCATE TABLE `users`;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -43,7 +44,8 @@ INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `status`) VALUES
 (9, 'liam@apexgym.com', 'scrypt:32768:8:1$2J70yZ5SuqWavFMX$9338918ee540d5a0eac02ef806a102df34a3b11e6c578ef6f9dfa716f1f1f67a4ebe3d151a5595c875720dd371865320be8a6834446ff2028fe7d550747dab17', 'member', 'active'),
 (10, 'maya@apexgym.com', 'scrypt:32768:8:1$2J70yZ5SuqWavFMX$9338918ee540d5a0eac02ef806a102df34a3b11e6c578ef6f9dfa716f1f1f67a4ebe3d151a5595c875720dd371865320be8a6834446ff2028fe7d550747dab17', 'member', 'active'),
 (11, 'carlos@apexgym.com', 'scrypt:32768:8:1$2J70yZ5SuqWavFMX$9338918ee540d5a0eac02ef806a102df34a3b11e6c578ef6f9dfa716f1f1f67a4ebe3d151a5595c875720dd371865320be8a6834446ff2028fe7d550747dab17', 'member', 'active'),
-(12, 'emily@apexgym.com', 'scrypt:32768:8:1$2J70yZ5SuqWavFMX$9338918ee540d5a0eac02ef806a102df34a3b11e6c578ef6f9dfa716f1f1f67a4ebe3d151a5595c875720dd371865320be8a6834446ff2028fe7d550747dab17', 'member', 'active');
+(12, 'emily@apexgym.com', 'scrypt:32768:8:1$2J70yZ5SuqWavFMX$9338918ee540d5a0eac02ef806a102df34a3b11e6c578ef6f9dfa716f1f1f67a4ebe3d151a5595c875720dd371865320be8a6834446ff2028fe7d550747dab17', 'member', 'active'),
+(13, 'staff@apexgym.com', 'scrypt:32768:8:1$9Hh4YETIz9u7ZWcV$60e5867e9d6c7d297e791a6f7cd21df6cb723c6b8475444b129ed615ee6ce800b106eea3e23e4f2f197e5d961a17109e3d8e67225e86bd435bf2f5843d3abcaf', 'staff', 'active');
 
 -- 2. TRAINERS
 INSERT INTO `trainers` (`id`, `user_id`, `trainer_code`, `full_name`, `email`, `phone`, `specialization`, `experience_years`, `bio`, `schedule`, `photo_url`, `status`) VALUES
@@ -206,3 +208,99 @@ INSERT INTO `notifications` (`user_id`, `title`, `message`, `type`, `is_read`, `
 
 -- Sarah Connor Notifications (user_id = 6)
 (6, 'Membership Renewal Alert', 'Your Gold Performance membership expires on September 21, 2026. Renew today to keep your streak!', 'warning', FALSE, '2026-09-18 06:00:00');
+
+
+-- 16. ROLE PERMISSIONS
+INSERT INTO `role_permissions` (`role`, `permission_key`, `is_granted`) VALUES
+('admin', 'members:view', TRUE),
+('staff', 'members:view', TRUE),
+('trainer', 'members:view', TRUE),
+('member', 'members:view', FALSE),
+('admin', 'members:create', TRUE),
+('staff', 'members:create', TRUE),
+('trainer', 'members:create', FALSE),
+('member', 'members:create', FALSE),
+('admin', 'members:edit', TRUE),
+('staff', 'members:edit', TRUE),
+('trainer', 'members:edit', FALSE),
+('member', 'members:edit', FALSE),
+('admin', 'members:delete', TRUE),
+('staff', 'members:delete', FALSE),
+('trainer', 'members:delete', FALSE),
+('member', 'members:delete', FALSE),
+('admin', 'attendance:view', TRUE),
+('staff', 'attendance:view', TRUE),
+('trainer', 'attendance:view', TRUE),
+('member', 'attendance:view', FALSE),
+('admin', 'attendance:checkin', TRUE),
+('staff', 'attendance:checkin', TRUE),
+('trainer', 'attendance:checkin', TRUE),
+('member', 'attendance:checkin', FALSE),
+('admin', 'attendance:checkout', TRUE),
+('staff', 'attendance:checkout', TRUE),
+('trainer', 'attendance:checkout', TRUE),
+('member', 'attendance:checkout', FALSE),
+('admin', 'attendance:edit', TRUE),
+('staff', 'attendance:edit', TRUE),
+('trainer', 'attendance:edit', FALSE),
+('member', 'attendance:edit', FALSE),
+('admin', 'badges:view', TRUE),
+('staff', 'badges:view', TRUE),
+('trainer', 'badges:view', TRUE),
+('member', 'badges:view', FALSE),
+('admin', 'trainers:view', TRUE),
+('staff', 'trainers:view', TRUE),
+('trainer', 'trainers:view', TRUE),
+('member', 'trainers:view', FALSE),
+('admin', 'trainers:manage', TRUE),
+('staff', 'trainers:manage', FALSE),
+('trainer', 'trainers:manage', FALSE),
+('member', 'trainers:manage', FALSE),
+('admin', 'trainer_attendance:manage', TRUE),
+('staff', 'trainer_attendance:manage', TRUE),
+('trainer', 'trainer_attendance:manage', TRUE),
+('member', 'trainer_attendance:manage', FALSE),
+('admin', 'plans:view', TRUE),
+('staff', 'plans:view', TRUE),
+('trainer', 'plans:view', TRUE),
+('member', 'plans:view', FALSE),
+('admin', 'plans:manage', TRUE),
+('staff', 'plans:manage', FALSE),
+('trainer', 'plans:manage', FALSE),
+('member', 'plans:manage', FALSE),
+('admin', 'payments:view', TRUE),
+('staff', 'payments:view', TRUE),
+('trainer', 'payments:view', FALSE),
+('member', 'payments:view', FALSE),
+('admin', 'payments:create', TRUE),
+('staff', 'payments:create', TRUE),
+('trainer', 'payments:create', FALSE),
+('member', 'payments:create', FALSE),
+('admin', 'workouts:view', TRUE),
+('staff', 'workouts:view', TRUE),
+('trainer', 'workouts:view', TRUE),
+('member', 'workouts:view', FALSE),
+('admin', 'workouts:manage', TRUE),
+('staff', 'workouts:manage', FALSE),
+('trainer', 'workouts:manage', TRUE),
+('member', 'workouts:manage', FALSE),
+('admin', 'diets:view', TRUE),
+('staff', 'diets:view', TRUE),
+('trainer', 'diets:view', TRUE),
+('member', 'diets:view', FALSE),
+('admin', 'diets:manage', TRUE),
+('staff', 'diets:manage', FALSE),
+('trainer', 'diets:manage', TRUE),
+('member', 'diets:manage', FALSE),
+('admin', 'reports:view', TRUE),
+('staff', 'reports:view', FALSE),
+('trainer', 'reports:view', FALSE),
+('member', 'reports:view', FALSE),
+('admin', 'reports:export', TRUE),
+('staff', 'reports:export', FALSE),
+('trainer', 'reports:export', FALSE),
+('member', 'reports:export', FALSE),
+('admin', 'roles:manage', TRUE),
+('staff', 'roles:manage', FALSE),
+('trainer', 'roles:manage', FALSE),
+('member', 'roles:manage', FALSE);

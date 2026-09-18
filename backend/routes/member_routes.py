@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
 from flask import Blueprint, request, current_app
 from backend.database import query_db
-from backend.utils.auth_middleware import token_required, role_required
+from backend.utils.auth_middleware import token_required, role_required, permission_required, has_permission
 from backend.utils.helpers import (
     success_response, error_response, generate_member_code, 
     generate_invoice_no, allowed_file
@@ -15,7 +15,7 @@ member_bp = Blueprint('members', __name__, url_prefix='/api/members')
 
 @member_bp.route('', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('members:view')
 def list_members():
     """List members with search, status filtering, and pagination."""
     page = int(request.args.get('page', 1))
@@ -159,7 +159,7 @@ def get_member(member_id):
 
 @member_bp.route('', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('members:create')
 def create_member():
     """Register a new member with user account, initial plan, and optional payment record."""
     data = request.get_json(silent=True) or {}
@@ -268,7 +268,10 @@ def update_member(member_id):
         """, (phone, emergency_contact, address, member_id), commit=True)
         return success_response(message='Profile updated successfully')
 
-    # Admin / Staff update
+    # Admin / Staff / Trainer update
+    if not has_permission(request.current_user['role'], 'members:edit'):
+        return error_response("Access denied. Missing permission: 'members:edit'", status_code=403)
+
     full_name = data.get('full_name')
     phone = data.get('phone')
     gender = data.get('gender')
@@ -295,7 +298,7 @@ def update_member(member_id):
 
 @member_bp.route('/<int:member_id>', methods=['DELETE'])
 @token_required
-@role_required(['admin'])
+@permission_required('members:delete')
 def delete_member(member_id):
     """Delete member account with confirmation."""
     member = query_db("SELECT user_id, full_name FROM members WHERE id = %s", (member_id,), one=True)
@@ -346,7 +349,7 @@ def upload_photo(member_id):
 
 @member_bp.route('/badges', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('badges:view')
 def get_member_badges_route():
     """Retrieve active members/students with QR payloads for printable ID passes."""
     members = query_db("""

@@ -392,5 +392,95 @@ class SystemIntegrationTests(unittest.TestCase):
         self.assertTrue(d3['success'])
         self.assertEqual(d3['data']['action'], 'already_completed')
 
+    def test_23_staff_login_and_profile(self):
+        """Verify new Staff account login, role assignment, and permissions list."""
+        res = self.client.post('/api/auth/login', json={
+            'email': 'staff@apexgym.com',
+            'password': 'Staff@123'
+        })
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data['success'])
+        self.assertEqual(data['data']['user']['role'], 'staff')
+        self.assertIn('permissions', data['data']['user'])
+        self.assertIn('members:create', data['data']['user']['permissions'])
+        self.assertIn('payments:create', data['data']['user']['permissions'])
+        self.__class__.staff_token = data['data']['token']
+
+    def test_24_trainer_login_and_permissions(self):
+        """Verify Trainer login permissions: has workout management, lacks payment recording."""
+        res = self.client.post('/api/auth/login', json={
+            'email': 'marcus@apexgym.com',
+            'password': 'Trainer@123'
+        })
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data['success'])
+        self.assertEqual(data['data']['user']['role'], 'trainer')
+        self.assertIn('workouts:manage', data['data']['user']['permissions'])
+        self.assertNotIn('payments:create', data['data']['user']['permissions'])
+        self.assertNotIn('payments:view', data['data']['user']['permissions'])
+        self.__class__.trainer_token = data['data']['token']
+
+    def test_25_permissions_api_and_matrix_update(self):
+        """Verify GET & PUT /api/auth/permissions with role guards."""
+        admin_headers = {'Authorization': f"Bearer {self.admin_token}"}
+        staff_headers = {'Authorization': f"Bearer {self.staff_token}"}
+
+        # 1. GET permissions as Admin
+        res = self.client.get('/api/auth/permissions', headers=admin_headers)
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data['success'])
+        self.assertGreaterEqual(len(data['data']['definitions']), 23)
+        self.assertIn('staff', data['data']['matrix'])
+        self.assertIn('trainer', data['data']['matrix'])
+
+        # 2. PUT permissions as non-admin Staff should fail with 403
+        res_fail = self.client.put('/api/auth/permissions', json={
+            'updates': [{'role': 'trainer', 'permission_key': 'payments:view', 'is_granted': True}]
+        }, headers=staff_headers)
+        self.assertEqual(res_fail.status_code, 403)
+
+        # 3. PUT permissions as Admin should succeed
+        res_ok = self.client.put('/api/auth/permissions', json={
+            'updates': [{'role': 'trainer', 'permission_key': 'payments:view', 'is_granted': True}]
+        }, headers=admin_headers)
+        self.assertEqual(res_ok.status_code, 200)
+        self.assertTrue(res_ok.get_json()['success'])
+
+        # Verify change reflected in matrix
+        res_verify = self.client.get('/api/auth/permissions', headers=admin_headers)
+        self.assertIn('payments:view', res_verify.get_json()['data']['matrix']['trainer'])
+
+        # Reset back: revoke payments:view from trainer
+        self.client.put('/api/auth/permissions', json={
+            'updates': [{'role': 'trainer', 'permission_key': 'payments:view', 'is_granted': False}]
+        }, headers=admin_headers)
+
+    def test_26_role_permission_middleware_enforcement(self):
+        """Verify granular @permission_required blocks disallowed actions and permits authorized ones."""
+        trainer_headers = {'Authorization': f"Bearer {self.trainer_token}"}
+        staff_headers = {'Authorization': f"Bearer {self.staff_token}"}
+
+        # 1. Trainer attempts to record payment -> 403 Forbidden (missing payments:create)
+        res_blocked = self.client.post('/api/payments', json={
+            'member_id': 1,
+            'membership_id': 1,
+            'amount': 150.00,
+            'payment_method': 'card'
+        }, headers=trainer_headers)
+        self.assertEqual(res_blocked.status_code, 403)
+        self.assertIn('Missing permission', res_blocked.get_json()['message'])
+
+        # 2. Staff attempts to list payments -> Allowed 200 (has payments:view)
+        res_allowed = self.client.get('/api/payments', headers=staff_headers)
+        self.assertEqual(res_allowed.status_code, 200)
+        self.assertTrue(res_allowed.get_json()['success'])
+
+        # 3. Trainer attempts to export reports CSV -> 403 Forbidden (missing reports:export)
+        res_export_blocked = self.client.get('/api/reports/export/payments', headers=trainer_headers)
+        self.assertEqual(res_export_blocked.status_code, 403)
+
 if __name__ == '__main__':
     unittest.main()

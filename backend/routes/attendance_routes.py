@@ -1,7 +1,7 @@
 import datetime
 from flask import Blueprint, request
 from backend.database import query_db
-from backend.utils.auth_middleware import token_required, role_required
+from backend.utils.auth_middleware import token_required, role_required, permission_required
 from backend.utils.helpers import success_response, error_response
 
 attendance_bp = Blueprint('attendance', __name__, url_prefix='/api/attendance')
@@ -21,7 +21,7 @@ def format_time_field(val):
 
 @attendance_bp.route('/check-in', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('attendance:checkin')
 def check_in():
     """Check in a member for today with duplicate prevention and status verification."""
     data = request.get_json(silent=True) or {}
@@ -85,7 +85,7 @@ def check_in():
 
 @attendance_bp.route('/scan', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('attendance:checkin')
 def scan_member_qr():
     """Smart optical QR turnstile scanner for members/students:
        - First scan: In-Time (Status: present)
@@ -195,7 +195,7 @@ def scan_member_qr():
 
 @attendance_bp.route('/mark', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('attendance:checkin')
 def mark_attendance():
     """Explicitly mark a member as present, absent, or late (Roll-call endpoint)."""
     data = request.get_json(silent=True) or {}
@@ -265,7 +265,7 @@ def mark_attendance():
 
 @attendance_bp.route('/<int:attendance_id>', methods=['PUT'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('attendance:edit')
 def update_attendance_record(attendance_id):
     """Edit an attendance record (status, check-in, check-out, notes)."""
     record = query_db("SELECT * FROM attendance WHERE id = %s", (attendance_id,), one=True)
@@ -304,7 +304,7 @@ def update_attendance_record(attendance_id):
 
 @attendance_bp.route('/<int:attendance_id>', methods=['DELETE'])
 @token_required
-@role_required(['admin', 'staff'])
+@permission_required('attendance:edit')
 def delete_attendance_record(attendance_id):
     """Delete an attendance record."""
     record = query_db("SELECT id FROM attendance WHERE id = %s", (attendance_id,), one=True)
@@ -316,7 +316,7 @@ def delete_attendance_record(attendance_id):
 
 @attendance_bp.route('/check-out', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('attendance:checkout')
 def check_out():
     """Record member checkout time."""
     data = request.get_json(silent=True) or {}
@@ -347,7 +347,7 @@ def check_out():
 
 @attendance_bp.route('/today', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('attendance:view')
 def get_today_attendance():
     """Retrieve today's active attendance roster."""
     today = datetime.date.today().isoformat()
@@ -384,7 +384,7 @@ def get_today_attendance():
 
 @attendance_bp.route('/members/badges', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('badges:view')
 def get_member_badges():
     """Retrieve active members with QR payloads for printable ID passes."""
     members = query_db("""
@@ -402,7 +402,7 @@ def get_member_badges():
 
 @attendance_bp.route('/history', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('attendance:view')
 def get_attendance_history():
     """Retrieve attendance log with date filter, search, and pagination."""
     date_from = request.args.get('from')
@@ -485,7 +485,7 @@ def get_member_attendance(member_id):
 
 @attendance_bp.route('/trainers/scan', methods=['POST'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('trainer_attendance:manage')
 def scan_trainer_qr():
     """
     Process trainer QR code scan for In-Time & Out-Time attendance.
@@ -640,7 +640,7 @@ def scan_trainer_qr():
 
 @attendance_bp.route('/trainers/today', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('trainer_attendance:manage')
 def get_today_trainer_attendance():
     """Retrieve today's active trainer shift roster."""
     today = datetime.date.today().isoformat()
@@ -704,7 +704,7 @@ def get_today_trainer_attendance():
 
 @attendance_bp.route('/trainers/history', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('trainer_attendance:manage')
 def get_trainer_attendance_history():
     """Retrieve historical trainer attendance log."""
     trainer_id = request.args.get('trainer_id')
@@ -772,7 +772,7 @@ def get_trainer_attendance_history():
 
 @attendance_bp.route('/trainers/badges', methods=['GET'])
 @token_required
-@role_required(['admin', 'staff', 'trainer'])
+@permission_required('badges:view')
 def get_trainer_badges():
     """Return all active trainers with their QR code payloads for badge printing."""
     trainers = query_db("""
