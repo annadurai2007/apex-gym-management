@@ -48,13 +48,17 @@ def get_stats():
     # 4. Trainer count
     trainer_count = query_db("SELECT COUNT(*) as count FROM trainers WHERE status = 'active'", one=True)
 
+    today_dt = datetime.date.today()
+    today = today_dt.isoformat()
+    end_7 = (today_dt + datetime.timedelta(days=7)).isoformat()
+
     # 5. Expiring soon count (Memberships ending within 7 days from today)
     expiring_soon = query_db("""
         SELECT COUNT(*) as count
         FROM memberships
         WHERE status = 'active'
-          AND end_date BETWEEN %s AND DATE_ADD(%s, INTERVAL 7 DAY)
-    """, (today, today), one=True)
+          AND end_date BETWEEN %s AND %s
+    """, (today, end_7), one=True)
 
     data = {
         'total_members': member_counts['total_members'] or 0,
@@ -157,6 +161,7 @@ def get_recent_activity():
         LIMIT 5
     """)
 
+    end_14 = (datetime.date.today() + datetime.timedelta(days=14)).isoformat()
     expiring_soon = query_db("""
         SELECT ms.id as membership_id, ms.end_date, ms.price_paid,
                m.id as member_id, m.full_name, m.email, m.phone, m.member_code,
@@ -166,10 +171,10 @@ def get_recent_activity():
         JOIN members m ON ms.member_id = m.id
         JOIN membership_plans p ON ms.plan_id = p.id
         WHERE ms.status = 'active'
-          AND ms.end_date BETWEEN %s AND DATE_ADD(%s, INTERVAL 14 DAY)
+          AND ms.end_date BETWEEN %s AND %s
         ORDER BY ms.end_date ASC
         LIMIT 5
-    """, (today, today, today))
+    """, (today, today, end_14))
 
     data = {
         'recent_members': recent_members,

@@ -42,6 +42,15 @@ def create_app():
     # Ensure upload directory exists
     os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
 
+    # Initialize database engine and prepare tables
+    try:
+        from backend.database import _detect_engine, _ensure_sqlite_ready
+        engine = _detect_engine()
+        if engine == 'sqlite':
+            _ensure_sqlite_ready()
+    except Exception as db_err:
+        app.logger.warning(f"Database pre-initialization notice: {db_err}")
+
     # Route: Serve uploads
     @app.route('/uploads/<path:filename>')
     def serve_upload(filename):

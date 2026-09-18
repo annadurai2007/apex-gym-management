@@ -27,6 +27,10 @@ class Config:
         DB_PASSWORD = os.getenv('DB_PASSWORD', '')
         DB_NAME = os.getenv('DB_NAME', 'gym_management_db')
 
+    # SQLite Settings (Automatic fallback on Render/cloud when MySQL is absent)
+    USE_SQLITE = os.getenv('USE_SQLITE', '').lower() in ('true', '1', 'yes')
+    SQLITE_PATH = os.getenv('SQLITE_PATH', str(root_dir / 'gym_management.db'))
+
     # Security
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'apex_gym_jwt_secret_token_key_2026_super_secure')
     JWT_EXPIRES_HOURS = int(os.getenv('JWT_EXPIRES_HOURS', 24))

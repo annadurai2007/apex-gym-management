@@ -1347,21 +1347,55 @@
 }
 
 @media (max-width: 768px) {
+  .landing-container {
+    padding: 0 16px;
+  }
   .landing-navbar {
-    height: 72px;
+    height: 70px;
+  }
+  .nav-wrapper {
+    gap: 12px;
+  }
+  .brand-logo {
+    gap: 10px;
   }
   .brand-text {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
   }
   .brand-icon {
     width: 36px;
     height: 36px;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
+  }
+  .nav-actions {
+    gap: 8px;
+    margin-left: auto;
   }
   .nav-actions .sound-toggle-btn,
   .nav-actions .btn-secondary,
-  .nav-actions .btn-outline {
-    display: none;
+  .nav-actions .btn-outline,
+  .nav-actions .btn-primary {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    color: #FFFFFF;
+    cursor: pointer;
+    flex-shrink: 0;
+    touch-action: manipulation;
+  }
+  .mobile-menu-btn:active {
+    background: var(--accent-subtle);
+    border-color: var(--accent-border);
+    color: var(--accent-primary);
   }
   .hero-editorial {
     padding: 50px 0 40px;
@@ -1410,6 +1444,17 @@
 }
 
 @media (max-width: 480px) {
+  .announcement-bar {
+    font-size: 0.72rem;
+    padding: 7px 12px;
+    letter-spacing: 0.04em;
+  }
+  .brand-text {
+    font-size: 1rem;
+  }
+  .brand-text span {
+    display: none;
+  }
   .hero-headline-massive {
     font-size: 2.2rem;
   }
@@ -1418,8 +1463,5 @@
   }
   .section-title {
     font-size: 2.1rem;
-  }
-  .brand-text span {
-    display: inline;
   }
 }

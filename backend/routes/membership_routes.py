@@ -93,7 +93,9 @@ def assign_or_renew_membership():
 def get_expiring_memberships():
     """Retrieve all memberships expiring within N days (default 14 days)."""
     days = int(request.args.get('days', 14))
-    today = datetime.date.today().isoformat()
+    today_dt = datetime.date.today()
+    today = today_dt.isoformat()
+    end_target = (today_dt + datetime.timedelta(days=days)).isoformat()
 
     expiring = query_db("""
         SELECT ms.id as membership_id, ms.start_date, ms.end_date, ms.price_paid,
@@ -104,8 +106,8 @@ def get_expiring_memberships():
         JOIN members m ON ms.member_id = m.id
         JOIN membership_plans p ON ms.plan_id = p.id
         WHERE ms.status = 'active'
-          AND ms.end_date BETWEEN %s AND DATE_ADD(%s, INTERVAL %s DAY)
+          AND ms.end_date BETWEEN %s AND %s
         ORDER BY ms.end_date ASC
-    """, (today, today, today, days))
+    """, (today, today, end_target))
 
     return success_response(data=expiring, message='Expiring memberships retrieved')
