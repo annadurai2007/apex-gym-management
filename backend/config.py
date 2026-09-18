@@ -11,19 +11,29 @@ load_dotenv(root_dir / '.env')
 
 class Config:
     # Database Settings
-    DB_HOST = os.getenv('DB_HOST', '127.0.0.1')
-    DB_PORT = int(os.getenv('DB_PORT', 3306))
-    DB_USER = os.getenv('DB_USER', 'root')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
-    DB_NAME = os.getenv('DB_NAME', 'gym_management_db')
+    _db_url = os.getenv('DATABASE_URL') or os.getenv('MYSQL_URL') or os.getenv('JAWSDB_URL')
+    if _db_url:
+        from urllib.parse import urlparse
+        _p = urlparse(_db_url)
+        DB_HOST = _p.hostname or '127.0.0.1'
+        DB_PORT = _p.port or 3306
+        DB_USER = _p.username or 'root'
+        DB_PASSWORD = _p.password or ''
+        DB_NAME = _p.path.lstrip('/') if _p.path else 'gym_management_db'
+    else:
+        DB_HOST = os.getenv('DB_HOST', '127.0.0.1')
+        DB_PORT = int(os.getenv('DB_PORT', 3306))
+        DB_USER = os.getenv('DB_USER', 'root')
+        DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+        DB_NAME = os.getenv('DB_NAME', 'gym_management_db')
 
     # Security
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'apex_gym_jwt_secret_token_key_2026_super_secure')
     JWT_EXPIRES_HOURS = int(os.getenv('JWT_EXPIRES_HOURS', 24))
 
     # Application
-    DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
-    FLASK_PORT = int(os.getenv('FLASK_PORT', 5000))
+    DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't')
+    FLASK_PORT = int(os.getenv('PORT', os.getenv('FLASK_PORT', 5000)))
     CORS_ORIGIN = os.getenv('CORS_ORIGIN', '*')
 
     # Uploads
