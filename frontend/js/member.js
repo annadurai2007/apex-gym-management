@@ -101,6 +101,13 @@ async function loadMemberProfile() {
     const greetingName = document.getElementById('member-greeting-name');
     if (greetingName) greetingName.textContent = p.full_name;
 
+    const topbarName = document.getElementById('member-topbar-name');
+    if (topbarName) topbarName.textContent = p.full_name;
+
+    if (p.photo_url) {
+      document.querySelectorAll('.user-pill-avatar').forEach(img => img.src = p.photo_url);
+    }
+
     // Member Code & Plan
     document.getElementById('member-badge-code').textContent = p.member_code;
     document.getElementById('member-plan-name').textContent = p.plan_name || 'No Active Plan';

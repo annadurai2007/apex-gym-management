@@ -17,6 +17,105 @@
   <link rel="stylesheet" href="/css/variables.css">
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/dashboard.css">
+  <style>
+    .btn-guide-tour {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.3));
+      border: 1px solid #10B981;
+      color: #34D399;
+      font-weight: 700;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-guide-tour:hover {
+      background: rgba(16, 185, 129, 0.35);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      transform: translateY(-1px);
+    }
+    .btn-att-filter {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-att-filter:hover {
+      border-color: var(--accent-primary);
+      color: #FFF;
+    }
+    .btn-att-filter.active {
+      background: var(--accent-subtle);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      font-weight: 700;
+    }
+    .btn-rollcall-action {
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .guide-tour-tab-btn {
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .guide-tour-tab-btn:hover {
+      color: #FFF;
+    }
+    .guide-tour-tab-btn.active {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+    }
+    .guide-card-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .guide-talking-point {
+      background: rgba(16, 185, 129, 0.08);
+      border-left: 3px solid #10B981;
+      padding: 12px 14px;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      margin-top: 12px;
+      font-size: 0.84rem;
+      color: #E2E8F0;
+      line-height: 1.45;
+    }
+    .guide-talking-point strong {
+      color: #34D399;
+      display: block;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+  </style>
 </head>
 <body>
 
@@ -92,6 +191,12 @@
           <span class="nav-item-icon"><i data-lucide="settings"></i></span>
           <span class="nav-item-label">Settings</span>
         </a>
+
+        <div class="nav-category" style="color: #34D399;">Evaluation Defense</div>
+        <a class="nav-item" onclick="openGuideTourModal()" style="cursor: pointer; background: rgba(16, 185, 129, 0.08); border-left: 3px solid #10B981;">
+          <span class="nav-item-icon" style="color: #34D399;"><i data-lucide="graduation-cap"></i></span>
+          <span class="nav-item-label" style="color: #34D399; font-weight: 700;">Guide Demo Tour</span>
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -114,6 +219,12 @@
         </div>
 
         <div class="topbar-right">
+          <!-- Guide Demo Guide Button -->
+          <button class="btn-guide-tour" onclick="openGuideTourModal()" title="Project Guide Presentation Cheat Sheet & Technical Architecture">
+            <i data-lucide="graduation-cap" style="width: 15px; height: 15px;"></i>
+            <span>Guide Demo Guide</span>
+          </button>
+
           <!-- Audio Toggle -->
           <button class="sound-toggle-btn" onclick="SoundFX.toggle()" title="Toggle Sound FX">
             <i data-lucide="volume-2" style="width: 14px; height: 14px;"></i> <span class="sound-btn-text">Audio: On</span>
@@ -459,22 +570,28 @@
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 8px;">
                     <button type="button" class="btn-quick-badge" onclick="simulateMemberScan('APX-1001')">
-                      <span class="badge-code">APX-1001</span>
+                      <span class="badge-code font-mono">APX-1001</span>
                       <span class="badge-name">Alex Rivera</span>
                       <span class="badge-role">Platinum Elite Member</span>
                       <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto;"></i>
                     </button>
                     <button type="button" class="btn-quick-badge" onclick="simulateMemberScan('APX-1002')">
-                      <span class="badge-code">APX-1002</span>
-                      <span class="badge-name">Sarah Jenkins</span>
+                      <span class="badge-code font-mono">APX-1002</span>
+                      <span class="badge-name">Sarah Connor</span>
                       <span class="badge-role">Gold Performance Plan</span>
                       <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto;"></i>
                     </button>
                     <button type="button" class="btn-quick-badge" onclick="simulateMemberScan('APX-1004')">
-                      <span class="badge-code">APX-1004</span>
-                      <span class="badge-name">Jordan Hayes</span>
+                      <span class="badge-code font-mono">APX-1004</span>
+                      <span class="badge-name">Samantha Hayes</span>
                       <span class="badge-role">Apex Black VIP Pass</span>
                       <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto;"></i>
+                    </button>
+                    <button type="button" class="btn-quick-badge" onclick="simulateMemberScan('APX-1008')" style="border-left: 3px solid #A855F7;">
+                      <span class="badge-code font-mono" style="color: #C084FC;">APX-1008</span>
+                      <span class="badge-name">Emily Watson 🎓</span>
+                      <span class="badge-role" style="color: #E9D5FF;">College Student Scholar Pass</span>
+                      <i data-lucide="scan" style="width: 14px; height: 14px; margin-left: auto; color: #A855F7;"></i>
                     </button>
                   </div>
                 </div>
@@ -518,10 +635,10 @@
 
             <!-- Right: Today's Active Roster Table -->
             <div class="card" style="display: flex; flex-direction: column;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
                 <div>
                   <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 4px;">Today's Attendance Roster</h3>
-                  <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Members and students recorded in the club today</p>
+                  <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Active members & college students recorded today</p>
                 </div>
                 <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                   <button class="btn btn-sm btn-primary" onclick="openMarkAttendanceModal()" title="Mark Present / Absent Roll-Call" style="white-space: nowrap; padding: 6px 12px; font-size: 0.82rem;">
@@ -534,6 +651,33 @@
                     <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
                   </button>
                 </div>
+              </div>
+
+              <!-- Fast Roll-Call Strip (Instant 1-Click for Desk Staff) -->
+              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px; padding: 10px 14px; background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); flex-wrap: wrap;">
+                <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-primary); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="zap" style="width: 13px; height: 13px;"></i> Quick Roll-Call:
+                </span>
+                <select id="quick-rollcall-member-select" class="form-select" style="font-size: 0.82rem; padding: 5px 10px; flex: 1; min-width: 180px; max-width: 280px;">
+                  <option value="">Loading members...</option>
+                </select>
+                <div style="display: flex; gap: 6px;">
+                  <button type="button" class="btn btn-sm btn-primary" onclick="submitQuickRollCall('present')" style="padding: 5px 12px; font-size: 0.8rem; white-space: nowrap;">
+                    <i data-lucide="check" style="width: 13px; height: 13px;"></i> Mark Present
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline" onclick="submitQuickRollCall('absent')" style="padding: 5px 12px; font-size: 0.8rem; white-space: nowrap; color: #EF4444; border-color: rgba(239, 68, 68, 0.4);">
+                    <i data-lucide="x" style="width: 13px; height: 13px;"></i> Mark Absent
+                  </button>
+                </div>
+              </div>
+
+              <!-- Fast Filter Pills -->
+              <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;">
+                <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Filter:</span>
+                <button type="button" class="btn-att-filter active" data-filter="all" onclick="filterAttendanceRoster('all', this)">All Records (<span id="att-filter-all-count">0</span>)</button>
+                <button type="button" class="btn-att-filter" data-filter="student" onclick="filterAttendanceRoster('student', this)">🎓 Students (<span id="att-filter-student-count">0</span>)</button>
+                <button type="button" class="btn-att-filter" data-filter="active" onclick="filterAttendanceRoster('active', this)">🟢 In Club Now (<span id="att-filter-active-count">0</span>)</button>
+                <button type="button" class="btn-att-filter" data-filter="completed" onclick="filterAttendanceRoster('completed', this)">🏁 Completed (<span id="att-filter-completed-count">0</span>)</button>
               </div>
 
               <div class="table-responsive" style="flex: 1; overflow-x: auto;">
@@ -1848,6 +1992,249 @@
           <i data-lucide="shield" style="width: 12px; height: 12px; display: inline;"></i> Encoded with format <code>APEX:MEMBER:APX-XXXX</code>. Scannable at front desk or turnstile.
         </span>
         <button type="button" class="btn btn-secondary" onclick="UI.closeModal('modal-member-badges')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Project Guide & Evaluator Presentation Tour / Defense Cheatsheet -->
+  <div class="modal-overlay" id="modal-guide-tour">
+    <div class="modal-content" style="max-width: 820px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05)); border-bottom: 1px solid rgba(16, 185, 129, 0.3);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">🎓</div>
+          <div>
+            <h3 style="font-size: 1.25rem; color: #FFF; margin: 0 0 3px;">Project Guide Demo Tour & Defense Cheatsheet</h3>
+            <p class="text-muted" style="font-size: 0.8rem; margin: 0;">Step-by-step technical walkthrough for college viva / project presentation</p>
+          </div>
+        </div>
+        <button class="btn-icon" onclick="UI.closeModal('modal-guide-tour')">&times;</button>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div style="display: flex; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface); overflow-x: auto; padding: 0 16px;">
+        <button type="button" class="guide-tour-tab-btn active" onclick="switchGuideTab('arch', this)">1. Architecture & Dual-DB</button>
+        <button type="button" class="guide-tour-tab-btn" onclick="switchGuideTab('rbac', this)">2. RBAC Security Matrix</button>
+        <button type="button" class="guide-tour-tab-btn" onclick="switchGuideTab('attendance', this)">3. Smart QR Turnstile & Desk</button>
+        <button type="button" class="guide-tour-tab-btn" onclick="switchGuideTab('students', this)">4. Student vs Member Tiers</button>
+        <button type="button" class="guide-tour-tab-btn" onclick="switchGuideTab('finance', this)">5. Financial Ledger & Macros</button>
+      </div>
+
+      <div class="modal-body" style="padding: 22px; overflow-y: auto; flex: 1;">
+        <!-- TAB 1: ARCHITECTURE -->
+        <div id="guide-tab-arch" class="guide-tab-pane">
+          <div class="guide-card-box">
+            <h4 style="color: #FFF; font-size: 1.05rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="cpu" style="width: 18px; height: 18px; color: var(--accent-primary);"></i> Decoupled Client-Server & Dual-Database Engine
+            </h4>
+            <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
+              Apex Gym Management System utilizes an enterprise decoupled architecture: Python Flask powering a RESTful JSON API backend, paired with an ultra-responsive Vanilla JavaScript Single Page Application (SPA).
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+              <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Backend Tier</div>
+                <div style="font-size: 0.95rem; font-weight: 700; color: #FFF; margin: 4px 0;">Python 3 + Flask REST API</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Blueprints, PyMySQL, Cryptographic Passwords, Stateless JWT tokens</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Database Resilience</div>
+                <div style="font-size: 0.95rem; font-weight: 700; color: #10B981; margin: 4px 0;">MySQL + SQLite Fallback</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Zero-config fallback: Auto-migrates and seeds SQLite if MySQL server is offline</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Frontend Engine</div>
+                <div style="font-size: 0.95rem; font-weight: 700; color: var(--accent-primary); margin: 4px 0;">Native Vanilla JS SPA</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">0 bulky frontend dependencies, Chart.js, HTML5 optical QR scanner</div>
+              </div>
+            </div>
+
+            <div class="guide-talking-point">
+              <strong>🗣️ Guide Defense Explanation:</strong>
+              "Sir/Madam, one of our greatest architectural strengths is <em>high availability with zero-config database resilience</em>. When deployed on cloud or local servers, if MySQL is running, it connects via connection pooling. If MySQL credentials are not provided or the port is busy, our backend automatically detects it and activates our embedded SQLite engine with zero disruption to the user!"
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-sm btn-primary" onclick="UI.closeModal('modal-guide-tour'); switchView('overview');">
+              <i data-lucide="activity" style="width: 14px; height: 14px;"></i> View Live Dashboard Analytics
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 2: RBAC -->
+        <div id="guide-tab-rbac" class="guide-tab-pane" style="display: none;">
+          <div class="guide-card-box">
+            <h4 style="color: #FFF; font-size: 1.05rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="shield-check" style="width: 18px; height: 18px; color: #EF4444;"></i> Granular Role-Based Access Control (RBAC v2.0)
+            </h4>
+            <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
+              Every route and UI module is secured by permission tokens. There are 4 distinct roles with 18+ granular permissions:
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 14px;">
+              <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border-left: 3px solid #EF4444;">
+                <strong style="color: #EF4444; font-size: 0.85rem;">👑 Admin (Full Control)</strong>
+                <p style="font-size: 0.74rem; color: var(--text-muted); margin: 3px 0 0;">Has all 18 permissions: user roles, DB resets, payment creation, financial reports.</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border-left: 3px solid #F59E0B;">
+                <strong style="color: #F59E0B; font-size: 0.85rem;">🛡️ Front-Desk Staff</strong>
+                <p style="font-size: 0.74rem; color: var(--text-muted); margin: 3px 0 0;">Can check in members, record payments, and register new athletes. Blocked from system settings.</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border-left: 3px solid #3B82F6;">
+                <strong style="color: #3B82F6; font-size: 0.85rem;">🏋️ Master Trainer</strong>
+                <p style="font-size: 0.74rem; color: var(--text-muted); margin: 3px 0 0;">Assigns client workouts and dietary macros. Blocked from finance and permissions.</p>
+              </div>
+              <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border-left: 3px solid #10B981;">
+                <strong style="color: #10B981; font-size: 0.85rem;">🏃 Member / Student</strong>
+                <p style="font-size: 0.74rem; color: var(--text-muted); margin: 3px 0 0;">Accesses personal portal: workout log, diet plan, personal turnstile QR pass, and receipts.</p>
+              </div>
+            </div>
+
+            <div class="guide-talking-point">
+              <strong>🗣️ Guide Defense Explanation:</strong>
+              "Sir/Madam, our RBAC engine is completely dynamic. Admins can toggle individual permissions (e.g. allowing staff to view reports) right from the Role Permissions matrix UI. Backend validation is enforced via our Python <code>@permission_required('...')</code> decorator, ensuring that even if someone sends raw API requests via Postman or Curl, unpermitted actions are completely denied!"
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-sm btn-primary" onclick="UI.closeModal('modal-guide-tour'); switchView('permissions');">
+              <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> Open Live Permissions Matrix
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 3: ATTENDANCE -->
+        <div id="guide-tab-attendance" class="guide-tab-pane" style="display: none;">
+          <div class="guide-card-box">
+            <h4 style="color: #FFF; font-size: 1.05rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="scan-line" style="width: 18px; height: 18px; color: var(--accent-primary);"></i> Smart Optical Turnstile & Dual-Scan State Machine
+            </h4>
+            <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
+              Our attendance engine supports both hardware optical camera QR turnstiles and fast front-desk roll-call:
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px;">
+              <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); text-align: center;">
+                <span class="badge badge-lime" style="font-size: 0.72rem;">1st Scan</span>
+                <div style="font-size: 0.88rem; font-weight: 700; color: #FFF; margin: 6px 0 2px;">In-Time Recorded</div>
+                <div style="font-size: 0.74rem; color: var(--text-muted);">Status set to Present. Turnstile barrier unlocked.</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); text-align: center;">
+                <span class="badge badge-success" style="font-size: 0.72rem;">2nd Scan</span>
+                <div style="font-size: 0.88rem; font-weight: 700; color: #FFF; margin: 6px 0 2px;">Out-Time & Duration</div>
+                <div style="font-size: 0.74rem; color: var(--text-muted);">Logs checkout time and calculates total workout duration.</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); text-align: center;">
+                <span class="badge badge-info" style="font-size: 0.72rem;">3rd Scan</span>
+                <div style="font-size: 0.88rem; font-weight: 700; color: #FFF; margin: 6px 0 2px;">Duplicate Prevention</div>
+                <div style="font-size: 0.74rem; color: var(--text-muted);">Alerts staff that member already completed session today.</div>
+              </div>
+            </div>
+
+            <div class="guide-talking-point">
+              <strong>🗣️ Guide Defense Explanation:</strong>
+              "Sir/Madam, let me demonstrate our Optical Scanner simulation right now. On the left side of our Attendance Desk, clicking any member or student simulation badge immediately triggers the optical decoding pipeline. Watch the holographic HUD pop up with In-Time, Member Photo, and Plan tier—completely executed in the database!"
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-sm btn-primary" onclick="UI.closeModal('modal-guide-tour'); switchView('attendance');">
+              <i data-lucide="scan" style="width: 14px; height: 14px;"></i> Jump to Attendance Desk
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 4: STUDENTS -->
+        <div id="guide-tab-students" class="guide-tab-pane" style="display: none;">
+          <div class="guide-card-box">
+            <h4 style="color: #FFF; font-size: 1.05rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="graduation-cap" style="width: 18px; height: 18px; color: #C084FC;"></i> College Student vs Regular Member Management
+            </h4>
+            <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
+              Apex includes dedicated support for university and college student fitness programs:
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-sm); border: 1px solid rgba(168, 85, 247, 0.3);">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                  <span class="badge" style="background: #9333EA; color: #FFF; font-size: 0.72rem;">Student Scholar Pass</span>
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
+                  &bull; <strong>Discount Pricing:</strong> $89 for 6 months (vs $229 regular).<br>
+                  &bull; <strong>Campus Verification:</strong> College ID verification flag.<br>
+                  &bull; <strong>Student Badge:</strong> Highlighted with purple student badge on attendance logs and passes.<br>
+                  &bull; <strong>Demo Student:</strong> <code>emily@apexgym.com</code> (APX-1008).
+                </div>
+              </div>
+              <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                  <span class="badge badge-success" style="font-size: 0.72rem;">Regular Athlete Pass</span>
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
+                  &bull; <strong>Tiers:</strong> Silver Starter, Gold Performance, Platinum Elite, Apex Black VIP.<br>
+                  &bull; <strong>Perks:</strong> 24/7 Access, Cryo Recovery Suite, 1-on-1 Personal Coaching.<br>
+                  &bull; <strong>Renewal Pipeline:</strong> Auto-renewal status tracking.<br>
+                  &bull; <strong>Demo Athlete:</strong> <code>alex@apexgym.com</code> (APX-1001).
+                </div>
+              </div>
+            </div>
+
+            <div class="guide-talking-point">
+              <strong>🗣️ Guide Defense Explanation:</strong>
+              "Sir/Madam, our system specifically caters to academic student demographics by integrating student-discount passes. In our attendance roster, college students are visually distinguished with purple verification badges so front-desk staff can instantly recognize student memberships during roll-call."
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-sm btn-primary" onclick="UI.closeModal('modal-guide-tour'); switchView('members');">
+              <i data-lucide="users" style="width: 14px; height: 14px;"></i> View Member & Student Directory
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 5: FINANCE & MACROS -->
+        <div id="guide-tab-finance" class="guide-tab-pane" style="display: none;">
+          <div class="guide-card-box">
+            <h4 style="color: #FFF; font-size: 1.05rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="dollar-sign" style="width: 18px; height: 18px; color: var(--accent-primary);"></i> Financial Ledger & Athletic Performance Blueprints
+            </h4>
+            <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
+              Full-cycle accounting and scientific athletic coaching:
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+              <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm);">
+                <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">Financial Ledger & Invoicing</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.45;">
+                  &bull; Automatic sequential invoice IDs (<code>INV-YYYYMM-XXXX</code>).<br>
+                  &bull; Support for UPI, Credit/Debit Card, Cash, and Bank Transfer.<br>
+                  &bull; 1-Click Printable Tax Invoice / Thermal Receipt modal.<br>
+                  &bull; Real-time revenue aggregation and CSV export.
+                </div>
+              </div>
+              <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm);">
+                <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; margin-bottom: 6px;">Workout & Nutrition Blueprints</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.45;">
+                  &bull; Multi-day workout splits: Hypertrophy, Athletic HIIT, Powerlifting.<br>
+                  &bull; Detailed sets, rep targets, rest periods, and tempo guidance.<br>
+                  &bull; Macro breakdowns: Daily Target Calories, Protein, Carbs, Healthy Fats.<br>
+                  &bull; Syncs automatically with member mobile dashboard.
+                </div>
+              </div>
+            </div>
+
+            <div class="guide-talking-point">
+              <strong>🗣️ Guide Defense Explanation:</strong>
+              "Sir/Madam, notice how every financial transaction is linked with database foreign keys directly to the membership subscription and member ID. Every payment generates an official invoice and audit entry that can be printed or exported to CSV anytime!"
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="UI.closeModal('modal-guide-tour'); switchView('payments');">
+              <i data-lucide="receipt" style="width: 14px; height: 14px;"></i> View Payments Ledger
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="UI.closeModal('modal-guide-tour'); switchView('workouts');">
+              <i data-lucide="dumbbell" style="width: 14px; height: 14px;"></i> View Workout Routines
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between; background: var(--bg-surface);">
+        <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+          <i data-lucide="check-circle-2" style="width: 14px; height: 14px; color: #10B981;"></i> All backend endpoints running on live database
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="UI.closeModal('modal-guide-tour')">Close Tour</button>
       </div>
     </div>
   </div>

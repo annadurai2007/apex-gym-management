@@ -55,9 +55,10 @@ def check_in():
         (member['id'], today),
         one=True
     )
-    if existing and existing['status'] == 'present':
+    if existing and existing['status'] in ['present', 'completed']:
+        action_verb = "already completed workout session" if existing['status'] == 'completed' else f"already checked in today at {existing['check_in_time']}"
         return error_response(
-            f"Duplicate check-in prevented: {member['full_name']} already checked in today at {existing['check_in_time']}",
+            f"Duplicate check-in prevented: {member['full_name']} {action_verb}",
             status_code=409
         )
 

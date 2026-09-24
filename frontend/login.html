@@ -82,6 +82,105 @@
       border-color: var(--accent-border);
     }
 
+    .demo-guide-card {
+      background: linear-gradient(145deg, rgba(20, 24, 22, 0.95), rgba(13, 16, 15, 0.95));
+      border: 1px solid rgba(163, 230, 53, 0.25);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin: 18px 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .demo-guide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .demo-role-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .demo-role-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: #FFF;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      position: relative;
+    }
+    .demo-role-btn:hover {
+      background: rgba(163, 230, 53, 0.08);
+      border-color: var(--accent-primary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(163, 230, 53, 0.15);
+    }
+    .demo-role-btn:active {
+      transform: translateY(0);
+    }
+    .demo-role-btn .role-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+    .admin-role .role-icon-box { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .staff-role .role-icon-box { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .trainer-role .role-icon-box { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); }
+    .member-role .role-icon-box { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .student-role .role-icon-box { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); }
+
+    .demo-role-btn .role-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .demo-role-btn .role-title {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .demo-role-btn .role-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .demo-role-btn .role-action-pill {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      background: rgba(163, 230, 53, 0.1);
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     @media (max-width: 900px) {
       .auth-wrapper { grid-template-columns: 1fr; }
       .auth-visual { display: none; }
@@ -122,28 +221,76 @@
         <p class="text-muted">Sign in to your Apex Fitness Club account</p>
       </div>
 
-      <!-- Demo Accounts 1-Click Fill -->
-      <div>
-        <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em;">
-          <i data-lucide="sparkles" style="width: 14px; height: 14px; vertical-align: middle;"></i> Quick Demo Login Fill:
+      <!-- 1-Click Instant Demo Login for College Project Guide & Evaluators -->
+      <div class="demo-guide-card">
+        <div class="demo-guide-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(163, 230, 53, 0.2); display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-size: 1rem;">🎓</div>
+            <div>
+              <div style="font-size: 0.86rem; font-weight: 700; color: #FFF; line-height: 1.2;">Project Guide & Demo Access</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">1-Click Instant Login (No typing required)</div>
+            </div>
+          </div>
+          <span class="badge badge-lime" style="font-size: 0.65rem; padding: 2px 7px;">INSTANT DEMO</span>
         </div>
-        <div class="demo-pill-group">
-          <button type="button" class="demo-pill" onclick="fillCredentials('admin@apexgym.com', 'Admin@123', 'admin')">
-            <span class="badge badge-danger" style="padding: 2px 6px; font-size: 0.65rem;">Admin</span> admin@apexgym.com
+
+        <div class="demo-role-grid">
+          <!-- Admin -->
+          <button type="button" class="demo-role-btn admin-role" onclick="quickDemoLogin('admin@apexgym.com', 'Admin@123', 'admin', this)">
+            <div class="role-icon-box">👑</div>
+            <div class="role-details">
+              <span class="role-title">Apex Administrator <span class="badge badge-danger" style="font-size:0.6rem; padding:1px 5px;">Full Access</span></span>
+              <span class="role-sub">Executive Dashboard &bull; RBAC &bull; Financial Ledger</span>
+            </div>
+            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
           </button>
-          <button type="button" class="demo-pill" onclick="fillCredentials('staff@apexgym.com', 'Staff@123', 'staff')">
-            <span class="badge badge-warning" style="padding: 2px 6px; font-size: 0.65rem;">Staff</span> staff@apexgym.com
+
+          <!-- Staff -->
+          <button type="button" class="demo-role-btn staff-role" onclick="quickDemoLogin('staff@apexgym.com', 'Staff@123', 'staff', this)">
+            <div class="role-icon-box">🛡️</div>
+            <div class="role-details">
+              <span class="role-title">Front-Desk Staff <span class="badge badge-warning" style="font-size:0.6rem; padding:1px 5px;">Staff RBAC</span></span>
+              <span class="role-sub">Attendance Desk &bull; Member Registration</span>
+            </div>
+            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
           </button>
-          <button type="button" class="demo-pill" onclick="fillCredentials('marcus@apexgym.com', 'Trainer@123', 'trainer')">
-            <span class="badge badge-info" style="padding: 2px 6px; font-size: 0.65rem;">Trainer</span> marcus@apexgym.com
+
+          <!-- Trainer -->
+          <button type="button" class="demo-role-btn trainer-role" onclick="quickDemoLogin('marcus@apexgym.com', 'Trainer@123', 'trainer', this)">
+            <div class="role-icon-box">🏋️</div>
+            <div class="role-details">
+              <span class="role-title">Head Coach Marcus <span class="badge badge-info" style="font-size:0.6rem; padding:1px 5px;">Coach</span></span>
+              <span class="role-sub">Client Workout Splits &bull; Nutrition Macros</span>
+            </div>
+            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
           </button>
-          <button type="button" class="demo-pill" onclick="fillCredentials('alex@apexgym.com', 'Member@123', 'member')">
-            <span class="badge badge-success" style="padding: 2px 6px; font-size: 0.65rem;">Member</span> alex@apexgym.com
+
+          <!-- Regular Elite Member -->
+          <button type="button" class="demo-role-btn member-role" onclick="quickDemoLogin('alex@apexgym.com', 'Member@123', 'member', this)">
+            <div class="role-icon-box">🏃</div>
+            <div class="role-details">
+              <span class="role-title">Elite Member Alex <span class="badge badge-success" style="font-size:0.6rem; padding:1px 5px;">Platinum</span></span>
+              <span class="role-sub">Member Portal &bull; Turnstile QR &bull; Invoices</span>
+            </div>
+            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
           </button>
-          <button type="button" class="demo-pill" onclick="fillCredentials('sarah@apexgym.com', 'Member@123', 'member')">
-            <span class="badge badge-warning" style="padding: 2px 6px; font-size: 0.65rem;">Expiring</span> sarah@apexgym.com
+
+          <!-- College Student Member -->
+          <button type="button" class="demo-role-btn student-role" onclick="quickDemoLogin('emily@apexgym.com', 'Member@123', 'student', this)">
+            <div class="role-icon-box">🎓</div>
+            <div class="role-details">
+              <span class="role-title">Student Member Emily <span class="badge" style="font-size:0.6rem; padding:1px 5px; background: #9333ea; color: #FFF;">Student Pass</span></span>
+              <span class="role-sub">College Discount Pass &bull; Campus ID Verified</span>
+            </div>
+            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
           </button>
         </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; margin: 18px 0 20px;">
+        <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
+        <span style="font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Or Manual Sign-In</span>
+        <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
       </div>
 
       <!-- Login Form -->
@@ -248,6 +395,49 @@
       document.getElementById('login-email').value = email;
       document.getElementById('login-password').value = password;
       UI.showToast(`Pre-filled ${role.toUpperCase()} credentials: ${email}`, 'info');
+    }
+
+    async function quickDemoLogin(email, password, role, btnEl) {
+      if (!btnEl) return;
+      const originalHtml = btnEl.innerHTML;
+      btnEl.disabled = true;
+      btnEl.style.opacity = '0.75';
+      btnEl.innerHTML = `
+        <div class="role-icon-box"><span style="display:inline-block; width:16px; height:16px; border:2px solid var(--accent-primary); border-top-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite;"></span></div>
+        <div class="role-details">
+          <span class="role-title" style="color:var(--accent-primary);">Authenticating ${role.toUpperCase()}...</span>
+          <span class="role-sub">Connecting live session...</span>
+        </div>
+      `;
+
+      const emailInput = document.getElementById('login-email');
+      const pwInput = document.getElementById('login-password');
+      if (emailInput) emailInput.value = email;
+      if (pwInput) pwInput.value = password;
+
+      try {
+        const result = await Auth.login(email, password);
+        if (result.success) {
+          if (window.SoundFX && typeof SoundFX.success === 'function') SoundFX.success();
+          UI.showToast(`Authorized as ${result.user.full_name || role.toUpperCase()}! Redirecting...`, 'success', 'Demo Access Granted');
+          setTimeout(() => {
+            const dest = (role === 'member' || role === 'student' || result.user.role === 'member') ? '/member' : '/admin';
+            window.location.href = dest;
+          }, 350);
+        } else {
+          btnEl.disabled = false;
+          btnEl.style.opacity = '1';
+          btnEl.innerHTML = originalHtml;
+          UI.refreshIcons();
+          UI.showToast(result.message || 'Authentication failed', 'error');
+        }
+      } catch (err) {
+        btnEl.disabled = false;
+        btnEl.style.opacity = '1';
+        btnEl.innerHTML = originalHtml;
+        UI.refreshIcons();
+        UI.showToast('Login error: ' + (err.message || 'Network error'), 'error');
+      }
     }
   </script>
 </body>

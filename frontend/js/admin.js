@@ -966,20 +966,140 @@ async function loadAttendanceView() {
   UI.refreshIcons();
 }
 
+let todayAttendanceRecords = [];
+let currentAttendanceFilter = 'all';
+
+function renderTodayAttendanceTable() {
+  const tbody = document.getElementById('today-attendance-tbody');
+  if (!tbody) return;
+
+  let filtered = todayAttendanceRecords;
+  if (currentAttendanceFilter === 'student') {
+    filtered = todayAttendanceRecords.filter(r => {
+      return (r.plan_name && r.plan_name.toLowerCase().includes('student')) ||
+             (r.full_name && r.full_name.toLowerCase().includes('student')) ||
+             r.member_code === 'APX-1008';
+    });
+  } else if (currentAttendanceFilter === 'active') {
+    filtered = todayAttendanceRecords.filter(r => r.status === 'present' && !r.check_out_time);
+  } else if (currentAttendanceFilter === 'completed') {
+    filtered = todayAttendanceRecords.filter(r => r.check_out_time || r.status === 'completed');
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-muted text-center" style="padding: 24px;">No records match filter "${currentAttendanceFilter}". Scan QR badge or use Quick Roll-Call.</td></tr>`;
+    UI.refreshIcons();
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const isStudent = (r.plan_name && r.plan_name.toLowerCase().includes('student')) ||
+                      (r.full_name && r.full_name.toLowerCase().includes('student')) ||
+                      r.member_code === 'APX-1008';
+
+    const tierBadge = isStudent ?
+      `<span class="badge" style="background: rgba(168, 85, 247, 0.2); border: 1px solid #A855F7; color: #D8B4FE; font-size: 0.65rem; padding: 2px 6px; display: inline-flex; align-items: center; gap: 4px;"><i data-lucide="graduation-cap" style="width: 10px; height: 10px;"></i> Student Pass</span>` :
+      `<span class="badge font-mono" style="background: rgba(163, 230, 53, 0.1); border: 1px solid rgba(163, 230, 53, 0.25); color: #BEF264; font-size: 0.65rem; padding: 2px 6px;">Regular Member</span>`;
+
+    let statusBadge = '';
+    if (r.status === 'absent') {
+      statusBadge = '<span class="badge badge-absent" style="display:inline-flex; align-items:center; gap:5px;"><i data-lucide="user-x" style="width:12px; height:12px;"></i> Absent</span>';
+    } else if (r.status === 'late') {
+      statusBadge = '<span class="badge badge-late">Late Arrival</span>';
+    } else if (r.check_out_time || r.status === 'completed') {
+      statusBadge = '<span class="badge badge-success" style="display:inline-flex; align-items:center; gap:5px;"><i data-lucide="check-check" style="width:12px; height:12px;"></i> Completed</span>';
+    } else {
+      statusBadge = '<span class="badge badge-lime" style="display:inline-flex; align-items:center; gap:5px;"><span class="status-pulse-dot"></span> In Club</span>';
+    }
+
+    const checkInFormatted = r.check_in_time ? `<strong class="text-lime font-mono">${UI.formatTime(r.check_in_time)}</strong>` : '<span class="text-muted">—</span>';
+    const checkOutFormatted = r.check_out_time ? `<span class="font-mono text-muted">${UI.formatTime(r.check_out_time)}</span>` : (r.status === 'present' ? '<span class="badge badge-warning" style="font-size: 0.7rem; padding: 1px 5px;">Active</span>' : '<span class="text-muted">—</span>');
+
+    // 1-Click Fast Inline Action Buttons
+    let actionButtons = '';
+    if (r.status === 'absent') {
+      actionButtons = `
+        <button class="btn-rollcall-action btn-primary" onclick="quickMarkAttendance(${r.member_id}, 'present', event)" title="1-Click Mark Present">
+          <i data-lucide="check" style="width: 11px; height: 11px;"></i> Present
+        </button>
+      `;
+    } else if (r.check_out_time || r.status === 'completed') {
+      actionButtons = `
+        <span class="badge badge-success" style="font-size: 0.68rem; padding: 2px 6px;">Done</span>
+      `;
+    } else if (r.status === 'present') {
+      actionButtons = `
+        <button class="btn-rollcall-action btn-outline" onclick="handleCheckOutAction(${r.id})" title="1-Click Record Out-Time" style="color: #10B981; border-color: #10B981;">
+          <i data-lucide="log-out" style="width: 11px; height: 11px;"></i> Check Out
+        </button>
+        <button class="btn-rollcall-action btn-outline" onclick="quickMarkAttendance(${r.member_id}, 'absent', event)" title="1-Click Mark Absent" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.4);">
+          <i data-lucide="x" style="width: 11px; height: 11px;"></i>
+        </button>
+      `;
+    } else {
+      actionButtons = `
+        <button class="btn-rollcall-action btn-primary" onclick="quickMarkAttendance(${r.member_id}, 'present', event)" title="1-Click Mark Present">
+          <i data-lucide="check" style="width: 11px; height: 11px;"></i> Present
+        </button>
+        <button class="btn-rollcall-action btn-outline" onclick="quickMarkAttendance(${r.member_id}, 'absent', event)" title="1-Click Mark Absent" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.4);">
+          <i data-lucide="x" style="width: 11px; height: 11px;"></i>
+        </button>
+      `;
+    }
+
+    return `
+      <tr>
+        <td>
+          <div class="user-cell">
+            <img src="${r.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80'}" class="user-avatar" alt="${r.full_name}">
+            <div class="user-cell-meta">
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span class="user-cell-name">${r.full_name}</span>
+                ${tierBadge}
+              </div>
+              <span class="user-cell-sub font-mono">${r.member_code} &bull; ${r.plan_name || 'Member Pass'}</span>
+            </div>
+          </div>
+        </td>
+        <td>${statusBadge}</td>
+        <td>${checkInFormatted}</td>
+        <td>${checkOutFormatted}</td>
+        <td class="notes-cell" title="${escapeAttr(r.notes || '')}">${r.notes || '<span class="text-muted">—</span>'}</td>
+        <td class="action-cell">
+          <div style="display: inline-flex; gap: 5px; align-items: center; justify-content: flex-end;">
+            ${actionButtons}
+            <button class="btn btn-sm btn-secondary btn-action-edit" onclick="openEditAttendanceModal(${r.id}, '${escapeAttr(r.full_name)}', '${r.member_code}', '${r.date}', '${r.status}', '${r.check_in_time || ''}', '${r.check_out_time || ''}', '${escapeAttr(r.notes || '')}')" title="Edit Record">
+              <i data-lucide="edit-2" style="width: 11px; height: 11px;"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  UI.refreshIcons();
+}
+
 async function loadTodayAttendance() {
   const tbody = document.getElementById('today-attendance-tbody');
   if (!tbody) return;
 
   const res = await apiFetch('/attendance/today');
   if (res.success && res.data) {
-    const records = res.data;
-    
-    // Aggregate Desk Summary Stats
+    todayAttendanceRecords = res.data;
+
     let presentCount = 0;
     let absentCount = 0;
     let completedCount = 0;
+    let studentCount = 0;
+    let inClubCount = 0;
 
-    records.forEach(r => {
+    todayAttendanceRecords.forEach(r => {
+      const isStudent = (r.plan_name && r.plan_name.toLowerCase().includes('student')) ||
+                        (r.full_name && r.full_name.toLowerCase().includes('student')) ||
+                        r.member_code === 'APX-1008';
+      if (isStudent) studentCount++;
+
       if (r.status === 'absent') {
         absentCount++;
       } else if (r.status === 'completed' || r.check_out_time) {
@@ -987,6 +1107,7 @@ async function loadTodayAttendance() {
         presentCount++;
       } else {
         presentCount++;
+        inClubCount++;
       }
     });
 
@@ -998,57 +1119,95 @@ async function loadTodayAttendance() {
     if (elPresent) elPresent.textContent = presentCount;
     if (elAbsent) elAbsent.textContent = absentCount;
     if (elCompleted) elCompleted.textContent = completedCount;
-    if (elTotal) elTotal.textContent = AdminState.members.total || (records.length + 5);
+    if (elTotal) elTotal.textContent = AdminState.members.total || (todayAttendanceRecords.length + 5);
 
-    if (records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center" style="padding: 24px;">No member attendance recorded yet today. Scan QR badge or click "Mark Attendance".</td></tr>';
-    } else {
-      tbody.innerHTML = records.map(r => {
-        let statusBadge = '';
-        if (r.status === 'absent') {
-          statusBadge = '<span class="badge badge-absent" style="display:inline-flex; align-items:center; gap:5px;"><i data-lucide="user-x" style="width:12px; height:12px;"></i> Absent</span>';
-        } else if (r.status === 'late') {
-          statusBadge = '<span class="badge badge-late">Late Arrival</span>';
-        } else if (r.check_out_time || r.status === 'completed') {
-          statusBadge = '<span class="badge badge-success" style="display:inline-flex; align-items:center; gap:5px;"><i data-lucide="check" style="width:12px; height:12px;"></i> Completed</span>';
-        } else {
-          statusBadge = '<span class="badge badge-lime" style="display:inline-flex; align-items:center; gap:5px;"><span class="status-pulse-dot"></span> Present</span>';
-        }
+    // Update filter badge counters
+    const fAll = document.getElementById('att-filter-all-count');
+    const fStudent = document.getElementById('att-filter-student-count');
+    const fActive = document.getElementById('att-filter-active-count');
+    const fCompleted = document.getElementById('att-filter-completed-count');
 
-        const checkInFormatted = r.check_in_time ? `<strong class="text-lime font-mono">${UI.formatTime(r.check_in_time)}</strong>` : '<span class="text-muted">—</span>';
-        const checkOutFormatted = r.check_out_time ? `<span class="font-mono">${UI.formatTime(r.check_out_time)}</span>` : (r.status === 'present' ? '<span class="badge badge-warning" style="font-size: 0.72rem;">Active</span>' : '<span class="text-muted">—</span>');
+    if (fAll) fAll.textContent = todayAttendanceRecords.length;
+    if (fStudent) fStudent.textContent = studentCount;
+    if (fActive) fActive.textContent = inClubCount;
+    if (fCompleted) fCompleted.textContent = completedCount;
 
-        return `
-          <tr>
-            <td>
-              <div class="user-cell">
-                <img src="${r.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80'}" class="user-avatar" alt="${r.full_name}">
-                <div class="user-cell-meta">
-                  <span class="user-cell-name">${r.full_name}</span>
-                  <span class="user-cell-sub font-mono">${r.member_code} &bull; ${r.plan_name || 'Member'}</span>
-                </div>
-              </div>
-            </td>
-            <td>${statusBadge}</td>
-            <td>${checkInFormatted}</td>
-            <td>${checkOutFormatted}</td>
-            <td class="notes-cell" title="${escapeAttr(r.notes || '')}">${r.notes || '<span class="text-muted">—</span>'}</td>
-            <td class="action-cell">
-              <div style="display: inline-flex; gap: 6px; align-items: center; justify-content: flex-end;">
-                ${(!r.check_out_time && r.status === 'present') ? `
-                  <button class="btn btn-sm btn-outline" onclick="handleCheckOutAction(${r.id})" title="Record Check-Out">Check Out</button>
-                ` : ''}
-                <button class="btn btn-sm btn-secondary btn-action-edit" onclick="openEditAttendanceModal(${r.id}, '${escapeAttr(r.full_name)}', '${r.member_code}', '${r.date}', '${r.status}', '${r.check_in_time || ''}', '${r.check_out_time || ''}', '${escapeAttr(r.notes || '')}')" title="Edit Record">
-                  <i data-lucide="edit-2" style="width: 12px; height: 12px;"></i> Edit
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-    UI.refreshIcons();
+    renderTodayAttendanceTable();
+    loadQuickRollCallMembers();
   }
+}
+
+async function loadQuickRollCallMembers() {
+  const select = document.getElementById('quick-rollcall-member-select');
+  if (!select) return;
+
+  // Fetch active members if not loaded yet
+  if (!AdminState.members.list || AdminState.members.list.length === 0) {
+    const res = await apiFetch('/members?limit=50&status=active');
+    if (res.success && res.data) {
+      AdminState.members.list = res.data;
+    }
+  }
+
+  const members = AdminState.members.list || [];
+  if (members.length === 0) {
+    select.innerHTML = '<option value="">No active members found</option>';
+    return;
+  }
+
+  select.innerHTML = '<option value="">Select Member / Student...</option>' + members.map(m => {
+    const isStudent = (m.plan_name && m.plan_name.toLowerCase().includes('student')) || m.member_code === 'APX-1008';
+    const tag = isStudent ? ' 🎓 (Student Pass)' : '';
+    return `<option value="${m.id}">${m.member_code} - ${m.full_name}${tag}</option>`;
+  }).join('');
+}
+
+async function quickMarkAttendance(memberId, status, evt) {
+  if (evt) evt.stopPropagation();
+  const res = await apiFetch('/attendance/mark', {
+    method: 'POST',
+    body: JSON.stringify({ member_id: memberId, status: status })
+  });
+  if (res.success) {
+    if (window.SoundFX && typeof SoundFX.success === 'function') SoundFX.success();
+    UI.showToast(res.message || `Member marked as ${status.toUpperCase()}`, 'success');
+    loadTodayAttendance();
+    loadAttendanceHistory();
+    loadOverviewDashboard();
+  } else {
+    if (window.SoundFX && typeof SoundFX.playTone === 'function') SoundFX.playTone(220, 'sawtooth', 0.25, 0.08);
+    UI.showToast(res.message || 'Failed to update attendance', 'error');
+  }
+}
+
+async function submitQuickRollCall(status) {
+  const select = document.getElementById('quick-rollcall-member-select');
+  if (!select || !select.value) {
+    UI.showToast('Please select a member or student from the dropdown first.', 'warning');
+    return;
+  }
+  await quickMarkAttendance(select.value, status);
+}
+
+function filterAttendanceRoster(filterType, btnEl) {
+  currentAttendanceFilter = filterType;
+  document.querySelectorAll('.btn-att-filter').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  renderTodayAttendanceTable();
+}
+
+function openGuideTourModal() {
+  UI.openModal('modal-guide-tour');
+  UI.refreshIcons();
+}
+
+function switchGuideTab(tabId, btnEl) {
+  document.querySelectorAll('.guide-tour-tab-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  document.querySelectorAll('.guide-tab-pane').forEach(p => p.style.display = 'none');
+  const pane = document.getElementById(`guide-tab-${tabId}`);
+  if (pane) pane.style.display = 'block';
+  UI.refreshIcons();
 }
 
 async function loadAttendanceHistory() {

@@ -58,7 +58,8 @@ INSERT INTO `membership_plans` (`id`, `name`, `code`, `duration_months`, `price`
 (1, 'Silver Starter', 'PLAN-SILVER', 1, 49.00, 'Essential access to gym floor and standard cardio zone.', '["Full Gym Floor Access", "Locker Room & Showers", "Free Water Station", "Standard Support"]', NULL, TRUE),
 (2, 'Gold Performance', 'PLAN-GOLD', 3, 129.00, 'Ideal for dedicated athletes aiming for structured results.', '["Full Gym Floor & Olympic Arena", "Sauna & Steam Bath", "1 Monthly Trainer Session", "Complimentary Towel Service", "Apex Mobile App Access"]', 'Popular', TRUE),
 (3, 'Platinum Elite', 'PLAN-PLATINUM', 6, 229.00, 'Comprehensive high-performance package with recovery suite.', '["24/7 VIP Access", "Unlimited Sauna & Cryo Recovery", "4 Dedicated Trainer Sessions", "Customized Nutrition Blueprint", "Locker Reservation", "Guest Pass (2/month)"]', 'Best Value', TRUE),
-(4, 'Apex Black VIP', 'PLAN-BLACK', 12, 399.00, 'Ultimate luxury fitness lifestyle with private personal coaching.', '["All-Inclusive 24/7 Access", "Weekly 1-on-1 Personal Coaching", "Unlimited Recovery & Spa Suite", "Full Biometric & Body Composition Scans", "VIP Private Lounge Access", "Custom Apparel Kit"]', 'VIP Access', TRUE);
+(4, 'Apex Black VIP', 'PLAN-BLACK', 12, 399.00, 'Ultimate luxury fitness lifestyle with private personal coaching.', '["All-Inclusive 24/7 Access", "Weekly 1-on-1 Personal Coaching", "Unlimited Recovery & Spa Suite", "Full Biometric & Body Composition Scans", "VIP Private Lounge Access", "Custom Apparel Kit"]', 'VIP Access', TRUE),
+(5, 'Student Scholar Pass', 'PLAN-STUDENT', 6, 89.00, 'Special college student discount package with flexible off-peak access.', '["College Student ID Verified", "Full Gym Floor Access", "Sauna & Steam Bath", "Off-Peak Free Locker", "Apex Mobile App Access"]', 'Student Discount', TRUE);
 
 -- 4. MEMBERS
 INSERT INTO `members` (`id`, `user_id`, `member_code`, `full_name`, `email`, `phone`, `gender`, `date_of_birth`, `emergency_contact`, `address`, `photo_url`, `joining_date`, `status`) VALUES
@@ -69,7 +70,7 @@ INSERT INTO `members` (`id`, `user_id`, `member_code`, `full_name`, `email`, `ph
 (5, 9, 'APX-1005', 'Liam Gallagher', 'liam@apexgym.com', '+1 (555) 905-5566', 'male', '1993-07-30', 'Noel Gallagher (+1 555-905-5544)', '504 Manchester Ave, Chicago, IL', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80', '2026-05-14', 'active'),
 (6, 10, 'APX-1006', 'Maya Patel', 'maya@apexgym.com', '+1 (555) 906-6677', 'female', '1997-12-14', 'Anil Patel (+1 555-906-4433)', '21 Silicon Vista, San Jose, CA', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=80', '2026-07-01', 'active'),
 (7, 11, 'APX-1007', 'Carlos Santana', 'carlos@apexgym.com', '+1 (555) 907-7788', 'male', '1989-09-09', 'Elena Santana (+1 555-907-3322)', '108 Sunset Strip, San Diego, CA', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80', '2026-02-10', 'active'),
-(8, 12, 'APX-1008', 'Emily Watson', 'emily@apexgym.com', '+1 (555) 908-8899', 'female', '2000-05-20', 'George Watson (+1 555-908-2211)', '77 Beacon Hill, Boston, MA', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80', '2026-09-15', 'pending');
+(8, 12, 'APX-1008', 'Emily Watson (Student)', 'emily@apexgym.com', '+1 (555) 908-8899', 'female', '2004-05-20', 'George Watson (+1 555-908-2211)', '77 Beacon Hill, Boston, MA', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80', '2026-09-15', 'active');
 
 -- 5. MEMBERSHIPS
 -- Current date context: September 2026
@@ -81,7 +82,7 @@ INSERT INTO `memberships` (`id`, `member_id`, `plan_id`, `start_date`, `end_date
 (5, 5, 2, '2026-07-01', '2026-10-01', 129.00, 'active', TRUE),      -- Liam: Gold (Expires Oct 1)
 (6, 6, 1, '2026-09-01', '2026-10-01', 49.00, 'active', FALSE),      -- Maya: Silver (Expires Oct 1)
 (7, 7, 3, '2026-08-15', '2027-02-15', 229.00, 'active', TRUE),      -- Carlos: Platinum (Expires Feb 2027)
-(8, 8, 2, '2026-09-18', '2026-12-18', 129.00, 'active', FALSE);     -- Emily: Gold (Started today)
+(8, 8, 5, '2026-09-15', '2027-03-15', 89.00, 'active', TRUE);       -- Emily: Student Scholar Pass
 
 -- 6. TRAINER ASSIGNMENTS
 INSERT INTO `trainer_assignments` (`id`, `member_id`, `trainer_id`, `assigned_date`, `status`, `notes`) VALUES
@@ -90,30 +91,27 @@ INSERT INTO `trainer_assignments` (`id`, `member_id`, `trainer_id`, `assigned_da
 (3, 4, 3, '2026-03-05', 'active', 'Competition prep, body fat reduction to sub-12%, strict nutrient timing.'),
 (4, 5, 1, '2026-07-05', 'active', 'Powerbuilding split: squat and bench press progression.');
 
--- 7. ATTENDANCE (Past two weeks + today)
+-- 7. ATTENDANCE (Live Today + Past History)
 INSERT INTO `attendance` (`member_id`, `date`, `check_in_time`, `check_out_time`, `status`, `notes`) VALUES
--- Today (2026-09-18)
-(1, '2026-09-18', '07:15:00', '08:45:00', 'present', 'Chest & Triceps session complete'),
-(2, '2026-09-18', '08:30:00', '09:40:00', 'present', 'HIIT Mobility circuit'),
-(4, '2026-09-18', '06:45:00', '08:15:00', 'present', 'Early morning heavy back day'),
-(5, '2026-09-18', '09:00:00', NULL, 'present', 'Currently in cardio theater'),
-(7, '2026-09-18', '11:15:00', NULL, 'present', 'Leg day with trainer Marcus'),
+-- Live Today (Always synced with current date)
+(1, CURDATE(), '07:15:00', '08:45:00', 'present', 'Chest & Triceps session complete'),
+(2, CURDATE(), '08:30:00', '09:40:00', 'present', 'HIIT Mobility circuit'),
+(4, CURDATE(), '06:45:00', '08:15:00', 'present', 'Early morning heavy back day'),
+(5, CURDATE(), '09:00:00', NULL, 'present', 'Currently in cardio theater'),
+(7, CURDATE(), '11:15:00', NULL, 'present', 'Leg day with trainer Marcus'),
+(8, CURDATE(), '12:00:00', NULL, 'present', 'College Student workout session'),
 
--- Yesterday (2026-09-17)
-(1, '2026-09-17', '07:20:00', '08:50:00', 'present', 'Back & Biceps'),
-(2, '2026-09-17', '08:15:00', '09:30:00', 'present', 'Recovery sauna & stretch'),
-(4, '2026-09-17', '07:00:00', '08:30:00', 'present', 'Shoulders & Calves'),
-(6, '2026-09-17', '17:30:00', '18:45:00', 'present', 'Evening treadmill & core'),
-
--- 2026-09-16
-(1, '2026-09-16', '07:10:00', '08:40:00', 'present', 'Leg day'),
-(5, '2026-09-16', '08:45:00', '10:00:00', 'present', 'Bench press volume'),
-(7, '2026-09-16', '12:00:00', '13:15:00', 'present', 'Full body workout'),
-
--- 2026-09-15
-(1, '2026-09-15', '07:30:00', '09:00:00', 'present', 'Shoulders & Arms'),
-(2, '2026-09-15', '08:00:00', '09:15:00', 'present', 'Conditioning'),
-(4, '2026-09-15', '06:30:00', '08:00:00', 'present', 'Squats & Quads');
+-- Historical Records
+(1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '07:20:00', '08:50:00', 'present', 'Back & Biceps'),
+(2, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '08:15:00', '09:30:00', 'present', 'Recovery sauna & stretch'),
+(4, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '07:00:00', '08:30:00', 'present', 'Shoulders & Calves'),
+(6, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '17:30:00', '18:45:00', 'present', 'Evening treadmill & core'),
+(1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '07:10:00', '08:40:00', 'present', 'Leg day'),
+(5, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '08:45:00', '10:00:00', 'present', 'Bench press volume'),
+(7, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '12:00:00', '13:15:00', 'present', 'Full body workout'),
+(1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '07:30:00', '09:00:00', 'present', 'Shoulders & Arms'),
+(2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '08:00:00', '09:15:00', 'present', 'Conditioning'),
+(4, DATE_SUB(CURDATE(), INTERVAL 3 DAY), '06:30:00', '08:00:00', 'present', 'Squats & Quads');
 
 -- 7b. TRAINER ATTENDANCE SEEDS
 INSERT INTO `trainer_attendance` (`trainer_id`, `date`, `in_time`, `out_time`, `total_hours`, `status`, `notes`) VALUES
@@ -129,7 +127,7 @@ INSERT INTO `payments` (`id`, `member_id`, `membership_id`, `invoice_no`, `amoun
 (5, 5, 5, 'INV-202607-1005', 129.00, '2026-07-01', 'card', 'TXN_APX_504938', 'paid', 'Gold Performance Renewal'),
 (6, 6, 6, 'INV-202609-1006', 49.00, '2026-09-01', 'card', 'TXN_APX_493821', 'paid', 'Silver Starter Monthly'),
 (7, 7, 7, 'INV-202608-1007', 229.00, '2026-08-15', 'card', 'TXN_APX_382710', 'paid', 'Platinum Elite Plan'),
-(8, 8, 8, 'INV-202609-1008', 129.00, '2026-09-18', 'upi', 'TXN_APX_271609', 'paid', 'New Registration - Gold Performance');
+(8, 8, 8, 'INV-202609-1008', 89.00, '2026-09-15', 'upi', 'TXN_APX_271609', 'paid', 'College Student Registration - Student Scholar Pass');
 
 -- 9. WORKOUT PLANS
 INSERT INTO `workout_plans` (`id`, `name`, `goal`, `difficulty`, `duration_weeks`, `description`, `created_by_trainer_id`) VALUES
