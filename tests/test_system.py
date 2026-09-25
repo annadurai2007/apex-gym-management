@@ -296,6 +296,16 @@ class SystemIntegrationTests(unittest.TestCase):
         self.assertTrue(d3['success'])
         self.assertEqual(d3['data']['action'], 'already_completed')
 
+        # 4. Test Reset Shift for Demo
+        res_reset = self.client.post('/api/attendance/trainers/reset-shift/3', headers=headers)
+        self.assertEqual(res_reset.status_code, 200)
+        self.assertTrue(res_reset.get_json()['success'])
+
+        # 5. Verify trainer can clock in again after reset
+        res_re_scan = self.client.post('/api/attendance/trainers/scan', json={'trainer_code': 'TRN-003'}, headers=headers)
+        self.assertEqual(res_re_scan.status_code, 200)
+        self.assertEqual(res_re_scan.get_json()['data']['action'], 'check_in')
+
     def test_16_trainer_qr_prefix_and_today_roster(self):
         """Verify QR scanner handles APEX:TRAINER: prefix and today's roster reflects shifts."""
         headers = {'Authorization': f"Bearer {self.admin_token}"}

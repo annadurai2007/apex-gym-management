@@ -1588,32 +1588,30 @@ async function startMemberCameraScanner() {
       AdminState.memberScanner = new Html5Qrcode('member-qr-reader');
     }
 
-    const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+    const camRes = await startHtml5Camera(AdminState.memberScanner, (decodedText) => {
+      processMemberScan(decodedText);
+    });
 
-    await AdminState.memberScanner.start(
-      { facingMode: 'user' },
-      config,
-      (decodedText) => {
-        processMemberScan(decodedText);
-      },
-      (errorMessage) => {}
-    );
-
-    AdminState.isMemberScanning = true;
-    if (toggleBtn) {
-      toggleBtn.innerHTML = '<i data-lucide="camera-off" style="width: 14px; height: 14px;"></i> Stop Camera';
-      toggleBtn.classList.remove('btn-outline');
-      toggleBtn.classList.add('btn-secondary');
+    if (camRes && camRes.success) {
+      AdminState.isMemberScanning = true;
+      if (toggleBtn) {
+        toggleBtn.innerHTML = '<i data-lucide="camera-off" style="width: 14px; height: 14px;"></i> Stop Camera';
+        toggleBtn.classList.remove('btn-outline');
+        toggleBtn.classList.add('btn-secondary');
+      }
+      if (viewportBox) viewportBox.classList.add('scanning');
+      if (idlePrompt) idlePrompt.style.display = 'none';
+      if (statusPill) statusPill.innerHTML = '<span class="status-pulse-dot"></span> Member Camera Active — Hold QR Pass in viewfinder';
+      UI.refreshIcons();
+      UI.showToast('Member optical camera scanner activated', 'info');
+    } else {
+      throw (camRes && camRes.error) || new Error('Camera device unavailable');
     }
-    if (viewportBox) viewportBox.classList.add('scanning');
-    if (idlePrompt) idlePrompt.style.display = 'none';
-    if (statusPill) statusPill.innerHTML = '<span class="status-pulse-dot"></span> Member Camera Active — Hold QR Pass in viewfinder';
-    UI.refreshIcons();
-    UI.showToast('Member optical camera scanner activated', 'info');
   } catch (err) {
     console.warn('Member camera access denied or unavailable:', err);
     AdminState.isMemberScanning = false;
-    UI.showToast('Camera unavailable. Use 1-Click Simulation Badges or type code below.', 'warning', 'Camera Notice');
+    renderScannerFallback('member');
+    UI.showToast('Physical webcam not detected or blocked in Chrome. Interactive simulator & QR File Upload ready below.', 'warning', 'Camera Notice');
     if (viewportBox) viewportBox.classList.remove('scanning');
     if (idlePrompt) idlePrompt.style.display = 'flex';
   }
@@ -1640,7 +1638,14 @@ async function stopMemberCameraScanner() {
     toggleBtn.classList.add('btn-outline');
   }
   if (viewportBox) viewportBox.classList.remove('scanning');
-  if (idlePrompt) idlePrompt.style.display = 'flex';
+  if (idlePrompt) {
+    idlePrompt.style.display = 'flex';
+    idlePrompt.innerHTML = `
+      <i data-lucide="scan-line" style="width: 44px; height: 44px; color: var(--accent-primary); margin-bottom: 8px; opacity: 0.7;"></i>
+      <span>Member Camera Standby</span>
+      <small style="color: var(--text-muted); font-size: 0.75rem;">Click "Start Camera" or use Quick Test below</small>
+    `;
+  }
   if (statusPill) statusPill.innerHTML = '<i data-lucide="info" style="width: 13px; height: 13px;"></i> Scans Member QR Passes automatically';
   UI.refreshIcons();
 }
@@ -2348,7 +2353,14 @@ async function loadTrainerTodayRoster() {
         </button>`;
       } else if (r.status === 'completed') {
         statusBadge = `<span class="badge badge-success"><i data-lucide="check" style="width: 12px; height: 12px;"></i> Completed</span>`;
-        actionBtn = `<span class="text-muted" style="font-size: 0.8rem;">Shift Finished</span>`;
+        actionBtn = `
+          <div style="display:inline-flex; align-items:center; gap:6px;">
+            <span class="text-muted" style="font-size: 0.78rem;">Done</span>
+            <button class="btn btn-sm btn-outline" onclick="resetTrainerShift(${r.trainer_id})" title="Reset today's shift to test Clock-In again" style="padding: 2px 7px; font-size: 0.72rem; display:inline-flex; align-items:center; gap:4px;">
+              <i data-lucide="rotate-ccw" style="width: 11px; height: 11px;"></i> Re-Test
+            </button>
+          </div>
+        `;
       } else if (r.status === 'late') {
         statusBadge = `<span class="badge badge-warning">Late Entry</span>`;
         actionBtn = `<button class="btn btn-sm btn-outline" onclick="simulateTrainerScan('${r.trainer_code}')">Clock Out</button>`;
@@ -2566,11 +2578,21 @@ function showTrainerHud(data) {
     totalHours.textContent = data.total_hours !== null && data.total_hours !== undefined ? `${data.total_hours} hrs` : (action === 'check_in' ? 'Tracking' : '—');
   }
   if (statusMsg) {
-    statusMsg.innerHTML = `<i data-lucide="check-circle" style="width:14px; height:14px; display:inline;"></i> ${
-      action === 'check_in' ? 'Shift started. In-time verified and stored.' :
-      action === 'check_out' ? `Shift ended. Total duration logged: ${data.total_hours} hrs.` :
-      'Shift was completed earlier today.'
-    }`;
+    if (action === 'check_in') {
+      statusMsg.innerHTML = '<i data-lucide="check-circle" style="width:14px; height:14px; display:inline;"></i> Shift started. In-time verified and stored.';
+    } else if (action === 'check_out') {
+      statusMsg.innerHTML = `<i data-lucide="check-circle" style="width:14px; height:14px; display:inline;"></i> Shift ended. Total duration logged: ${data.total_hours} hrs.`;
+    } else {
+      const coachId = trainer.id || data.trainer_id;
+      statusMsg.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <span><i data-lucide="check-circle" style="width:14px; height:14px; display:inline;"></i> Shift completed earlier today.</span>
+          <button class="btn btn-sm btn-outline" onclick="resetTrainerShift(${coachId})" style="font-size: 0.74rem; padding: 3px 8px; display:inline-flex; align-items:center; gap:4px;" title="Reset shift to test Clock-In again">
+            <i data-lucide="rotate-ccw" style="width: 11px; height: 11px;"></i> Re-Clock In / Reset
+          </button>
+        </div>
+      `;
+    }
     UI.refreshIcons();
   }
 
@@ -2593,8 +2615,196 @@ function hideTrainerHud() {
 }
 
 // --------------------------------------------------------------------------
-// CAMERA SCANNER ENGINE (Html5Qrcode)
+// CAMERA SCANNER ENGINE & MULTI-DEVICE FALLBACK (Html5Qrcode)
 // --------------------------------------------------------------------------
+
+/**
+ * Universal camera starter with device detection and constraint fallbacks
+ */
+async function startHtml5Camera(scannerInstance, onScanSuccess) {
+  const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+  // 1. Try querying available video hardware devices
+  let cameraDeviceId = null;
+  try {
+    const devices = await Html5Qrcode.getCameras();
+    if (devices && devices.length > 0) {
+      cameraDeviceId = devices[0].id;
+    }
+  } catch (e) {
+    console.warn('Camera device enumeration unavailable, trying constraints:', e);
+  }
+
+  // 2. Try starting with device ID if found
+  if (cameraDeviceId) {
+    try {
+      await scannerInstance.start(
+        cameraDeviceId,
+        config,
+        onScanSuccess,
+        () => {}
+      );
+      return { success: true };
+    } catch (devErr) {
+      console.warn('Starting camera by deviceId failed, attempting fallback constraints:', devErr);
+    }
+  }
+
+  // 3. Fallback to facingMode: 'user'
+  try {
+    await scannerInstance.start(
+      { facingMode: 'user' },
+      config,
+      onScanSuccess,
+      () => {}
+    );
+    return { success: true };
+  } catch (userErr) {
+    // 4. Fallback to facingMode: 'environment' (standard for desktop webcams)
+    try {
+      await scannerInstance.start(
+        { facingMode: 'environment' },
+        config,
+        onScanSuccess,
+        () => {}
+      );
+      return { success: true };
+    } catch (finalErr) {
+      return { success: false, error: finalErr };
+    }
+  }
+}
+
+/**
+ * Handle QR image file upload and decoding
+ */
+async function handleQrFileUpload(event, type) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const readerId = type === 'trainer' ? 'trainer-qr-reader' : 'member-qr-reader';
+  let scanner = (type === 'trainer') ? AdminState.trainerScanner : AdminState.memberScanner;
+
+  if (!scanner) {
+    scanner = new Html5Qrcode(readerId);
+    if (type === 'trainer') AdminState.trainerScanner = scanner;
+    else AdminState.memberScanner = scanner;
+  }
+
+  UI.showToast('Decoding QR image file...', 'info');
+
+  try {
+    const decodedText = await scanner.scanFile(file, true);
+    if (window.SoundFX && typeof SoundFX.success === 'function') SoundFX.success();
+    UI.showToast(`Decoded QR: ${decodedText}`, 'success', 'QR Verified');
+    if (type === 'trainer') {
+      processTrainerScan(decodedText);
+    } else {
+      processMemberScan(decodedText);
+    }
+  } catch (err) {
+    console.warn('QR file decode failed:', err);
+    UI.showToast('No readable QR code found in selected image. Please try another image.', 'error', 'Decode Failed');
+  }
+  event.target.value = '';
+}
+
+/**
+ * Reset today's shift for a trainer so user/evaluator can test Clock-In and Clock-Out again
+ */
+async function resetTrainerShift(trainerId) {
+  try {
+    UI.showToast('Resetting shift for demo test...', 'info');
+    const res = await apiFetch(`/attendance/trainers/reset-shift/${trainerId}`, { method: 'POST' });
+    if (res && res.success) {
+      if (window.SoundFX && typeof SoundFX.success === 'function') SoundFX.success();
+      UI.showToast(res.message || 'Shift reset to Awaiting Arrival', 'success', 'Demo Reset');
+      hideTrainerHud();
+      await loadTrainerTodayRoster();
+      await loadTrainerAttendanceHistory();
+    } else {
+      UI.showToast(res ? res.message : 'Failed to reset shift', 'error');
+    }
+  } catch (err) {
+    UI.showToast('Network error resetting shift: ' + err.message, 'error');
+  }
+}
+
+/**
+ * Render friendly fallback inside camera viewport when webcam is unavailable
+ */
+function renderScannerFallback(type) {
+  const isTrainer = type === 'trainer';
+  const promptEl = document.getElementById(isTrainer ? 'scanner-idle-prompt' : 'member-scanner-idle-prompt');
+  if (!promptEl) return;
+
+  if (isTrainer) {
+    promptEl.innerHTML = `
+      <div style="text-align: center; padding: 12px; color: #FFF; width: 100%; max-width: 270px;">
+        <div style="font-size: 1.5rem; margin-bottom: 2px;">📷</div>
+        <div style="font-weight: 800; font-size: 0.85rem; color: #FFF; margin-bottom: 2px;">Camera Standby / Blocked</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.3;">
+          Click <strong>Allow</strong> on browser camera prompt, or use 1-Click Simulation below:
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px;">
+          <button type="button" class="btn btn-sm btn-primary" onclick="simulateTrainerScan('TRN-001')" style="font-size: 0.74rem; padding: 5px 8px; justify-content: center;">
+            ⚡ Scan Marcus (TRN-001)
+          </button>
+          <div style="display: flex; gap: 5px;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="simulateTrainerScan('TRN-002')" style="flex:1; font-size: 0.7rem; padding: 3px 5px; justify-content: center;">
+              Elena (002)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="simulateTrainerScan('TRN-003')" style="flex:1; font-size: 0.7rem; padding: 3px 5px; justify-content: center;">
+              David (003)
+            </button>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 6px;">
+          <label class="btn btn-sm btn-outline" style="cursor: pointer; font-size: 0.7rem; padding: 3px 8px;">
+            <i data-lucide="image" style="width: 12px; height: 12px;"></i> Upload QR
+            <input type="file" accept="image/*" style="display: none;" onchange="handleQrFileUpload(event, 'trainer')">
+          </label>
+          <button type="button" class="btn btn-sm btn-outline" onclick="startCameraScanner()" style="font-size: 0.7rem; padding: 3px 8px;">
+            <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Retry Cam
+          </button>
+        </div>
+      </div>
+    `;
+  } else {
+    promptEl.innerHTML = `
+      <div style="text-align: center; padding: 12px; color: #FFF; width: 100%; max-width: 270px;">
+        <div style="font-size: 1.5rem; margin-bottom: 2px;">📷</div>
+        <div style="font-weight: 800; font-size: 0.85rem; color: #FFF; margin-bottom: 2px;">Turnstile Camera Standby</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.3;">
+          Click <strong>Allow</strong> on browser camera prompt, or use 1-Click Simulation below:
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px;">
+          <button type="button" class="btn btn-sm btn-primary" onclick="simulateMemberScan('APX-1008')" style="font-size: 0.74rem; padding: 5px 8px; justify-content: center; background: #9333ea; border-color: #a855f7; color: #FFF;">
+            🎓 Scan Student Pass Emily
+          </button>
+          <div style="display: flex; gap: 5px;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="simulateMemberScan('APX-1001')" style="flex:1; font-size: 0.7rem; padding: 3px 5px; justify-content: center;">
+              Alex (1001)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="simulateMemberScan('APX-1002')" style="flex:1; font-size: 0.7rem; padding: 3px 5px; justify-content: center;">
+              Sarah (1002)
+            </button>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 6px;">
+          <label class="btn btn-sm btn-outline" style="cursor: pointer; font-size: 0.7rem; padding: 3px 8px;">
+            <i data-lucide="image" style="width: 12px; height: 12px;"></i> Upload QR
+            <input type="file" accept="image/*" style="display: none;" onchange="handleQrFileUpload(event, 'member')">
+          </label>
+          <button type="button" class="btn btn-sm btn-outline" onclick="startMemberCameraScanner()" style="font-size: 0.7rem; padding: 3px 8px;">
+            <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Retry Cam
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  UI.refreshIcons();
+}
 
 async function toggleCameraScanner() {
   if (AdminState.isTrainerScanning) {
@@ -2621,35 +2831,30 @@ async function startCameraScanner() {
       AdminState.trainerScanner = new Html5Qrcode('trainer-qr-reader');
     }
 
-    const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+    const camRes = await startHtml5Camera(AdminState.trainerScanner, (decodedText) => {
+      processTrainerScan(decodedText);
+    });
 
-    await AdminState.trainerScanner.start(
-      { facingMode: 'user' },
-      config,
-      (decodedText) => {
-        // Scanned QR code successfully
-        processTrainerScan(decodedText);
-      },
-      (errorMessage) => {
-        // Continuous scan tick, ignore parse noise
+    if (camRes && camRes.success) {
+      AdminState.isTrainerScanning = true;
+      if (toggleBtn) {
+        toggleBtn.innerHTML = '<i data-lucide="camera-off" style="width: 14px; height: 14px;"></i> Stop Camera';
+        toggleBtn.classList.remove('btn-outline');
+        toggleBtn.classList.add('btn-secondary');
       }
-    );
-
-    AdminState.isTrainerScanning = true;
-    if (toggleBtn) {
-      toggleBtn.innerHTML = '<i data-lucide="camera-off" style="width: 14px; height: 14px;"></i> Stop Camera';
-      toggleBtn.classList.remove('btn-outline');
-      toggleBtn.classList.add('btn-secondary');
+      if (viewportBox) viewportBox.classList.add('scanning');
+      if (idlePrompt) idlePrompt.style.display = 'none';
+      if (statusPill) statusPill.innerHTML = '<span class="status-pulse-dot"></span> Camera Active — Hold Trainer QR in viewfinder';
+      UI.refreshIcons();
+      UI.showToast('Optical camera scanner activated', 'info');
+    } else {
+      throw (camRes && camRes.error) || new Error('Camera device unavailable');
     }
-    if (viewportBox) viewportBox.classList.add('scanning');
-    if (idlePrompt) idlePrompt.style.display = 'none';
-    if (statusPill) statusPill.innerHTML = '<span class="status-pulse-dot"></span> Camera Active — Hold Trainer QR in viewfinder';
-    UI.refreshIcons();
-    UI.showToast('Optical camera scanner activated', 'info');
   } catch (err) {
     console.warn('Webcam start failed or permission denied:', err);
     AdminState.isTrainerScanning = false;
-    UI.showToast('Camera access denied or unavailable. Use the 1-Click Simulation Badges or enter Code below.', 'warning', 'Camera Notice');
+    renderScannerFallback('trainer');
+    UI.showToast('Physical webcam not detected or blocked in Chrome. Interactive simulator & QR File Upload ready below.', 'warning', 'Camera Notice');
     if (viewportBox) viewportBox.classList.remove('scanning');
     if (idlePrompt) idlePrompt.style.display = 'flex';
   }
@@ -2676,7 +2881,14 @@ async function stopCameraScanner() {
     toggleBtn.classList.add('btn-outline');
   }
   if (viewportBox) viewportBox.classList.remove('scanning');
-  if (idlePrompt) idlePrompt.style.display = 'flex';
+  if (idlePrompt) {
+    idlePrompt.style.display = 'flex';
+    idlePrompt.innerHTML = `
+      <i data-lucide="scan-line" style="width: 44px; height: 44px; color: var(--accent-primary); margin-bottom: 8px; opacity: 0.7;"></i>
+      <span>Camera Standby</span>
+      <small style="color: var(--text-muted); font-size: 0.75rem;">Click "Start Camera" or use Quick Test below</small>
+    `;
+  }
   if (statusPill) statusPill.innerHTML = '<i data-lucide="info" style="width: 13px; height: 13px;"></i> Scans QR badges automatically when presented';
   UI.refreshIcons();
 }

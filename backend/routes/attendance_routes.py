@@ -771,6 +771,15 @@ def get_trainer_attendance_history():
         message="Trainer attendance history retrieved"
     )
 
+@attendance_bp.route('/trainers/reset-shift/<int:trainer_id>', methods=['POST'])
+@token_required
+@permission_required('trainer_attendance:manage')
+def reset_trainer_shift(trainer_id):
+    """Reset today's attendance record for a trainer so evaluator can re-test Clock In / Out."""
+    today = datetime.date.today().isoformat()
+    query_db("DELETE FROM trainer_attendance WHERE trainer_id = %s AND date = %s", (trainer_id, today), commit=True)
+    return success_response(message="Coach shift reset successfully. Status is now 'Awaiting Arrival' for demo test.")
+
 @attendance_bp.route('/trainers/badges', methods=['GET'])
 @token_required
 @permission_required('badges:view')

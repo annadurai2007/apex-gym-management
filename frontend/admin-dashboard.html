@@ -519,14 +519,20 @@
             <div style="display: flex; flex-direction: column; gap: 20px;">
               <!-- Optical Camera Station -->
               <div class="card scanner-chamber-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <div class="status-pulse-dot"></div>
                     <h3 style="font-size: 1.1rem; color: #FFF; margin: 0;">Member Optical Scanner</h3>
                   </div>
-                  <button id="btn-toggle-member-camera" class="btn btn-sm btn-outline" onclick="toggleMemberCameraScanner()">
-                    <i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera
-                  </button>
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <label class="btn btn-sm btn-outline" style="cursor: pointer; margin: 0; padding: 4px 10px; font-size: 0.78rem;" title="Upload & scan Member QR pass image file">
+                      <i data-lucide="image" style="width: 13px; height: 13px;"></i> QR File
+                      <input type="file" accept="image/*" style="display: none;" onchange="handleQrFileUpload(event, 'member')">
+                    </label>
+                    <button id="btn-toggle-member-camera" class="btn btn-sm btn-outline" onclick="toggleMemberCameraScanner()" style="padding: 4px 10px; font-size: 0.78rem;">
+                      <i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Scanner Viewport -->
@@ -768,7 +774,7 @@
           </div>
 
           <!-- Shift Stats Grid -->
-          <div class="stats-grid" style="margin-bottom: 28px;">
+          <div class="shift-stats-grid">
             <div class="stat-card" style="border-left: 3px solid var(--accent-primary);">
               <div class="stat-header">
                 <span class="stat-title">Active On Duty</span>
@@ -798,7 +804,7 @@
 
             <div class="stat-card">
               <div class="stat-header">
-                <span class="stat-title">Total Registered Coaches</span>
+                <span class="stat-title">Total Coaches</span>
                 <div class="stat-icon"><i data-lucide="users"></i></div>
               </div>
               <div class="stat-value" id="trainer-stat-total">0</div>
@@ -812,14 +818,20 @@
             <div style="display: flex; flex-direction: column; gap: 20px;">
               <!-- Optical Camera Station -->
               <div class="card scanner-chamber-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <div class="status-pulse-dot"></div>
                     <h3 style="font-size: 1.1rem; color: #FFF; margin: 0;">Optical QR Scanner</h3>
                   </div>
-                  <button id="btn-toggle-camera" class="btn btn-sm btn-outline" onclick="toggleCameraScanner()">
-                    <i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera
-                  </button>
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <label class="btn btn-sm btn-outline" style="cursor: pointer; margin: 0; padding: 4px 10px; font-size: 0.78rem;" title="Upload & scan QR badge image file">
+                      <i data-lucide="image" style="width: 13px; height: 13px;"></i> QR File
+                      <input type="file" accept="image/*" style="display: none;" onchange="handleQrFileUpload(event, 'trainer')">
+                    </label>
+                    <button id="btn-toggle-camera" class="btn btn-sm btn-outline" onclick="toggleCameraScanner()" style="padding: 4px 10px; font-size: 0.78rem;">
+                      <i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Scanner Viewport -->
