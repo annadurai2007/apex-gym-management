@@ -9,9 +9,11 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <!-- QR Code Engine & Scanner -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- QR Code Engine & Scanner (Local primary + CDN fallback) -->
+  <script src="/js/qrcode.min.js"></script>
+  <script>window.QRCode || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>')</script>
+  <script src="/js/html5-qrcode.min.js"></script>
+  <script>window.Html5Qrcode || document.write('<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script>')</script>
 
   <!-- CSS -->
   <link rel="stylesheet" href="/css/variables.css">
@@ -525,6 +527,9 @@
                     <h3 style="font-size: 1.1rem; color: #FFF; margin: 0;">Member Optical Scanner</h3>
                   </div>
                   <div style="display: flex; gap: 6px; align-items: center;">
+                    <button type="button" class="btn btn-sm btn-outline" onclick="openCameraHelpModal()" style="padding: 4px 8px; font-size: 0.78rem; color: #a855f7;" title="Webcam Setup & Troubleshooting Guide">
+                      <i data-lucide="help-circle" style="width: 13px; height: 13px;"></i> Help
+                    </button>
                     <label class="btn btn-sm btn-outline" style="cursor: pointer; margin: 0; padding: 4px 10px; font-size: 0.78rem;" title="Upload & scan Member QR pass image file">
                       <i data-lucide="image" style="width: 13px; height: 13px;"></i> QR File
                       <input type="file" accept="image/*" style="display: none;" onchange="handleQrFileUpload(event, 'member')">
@@ -824,6 +829,9 @@
                     <h3 style="font-size: 1.1rem; color: #FFF; margin: 0;">Optical QR Scanner</h3>
                   </div>
                   <div style="display: flex; gap: 6px; align-items: center;">
+                    <button type="button" class="btn btn-sm btn-outline" onclick="openCameraHelpModal()" style="padding: 4px 8px; font-size: 0.78rem; color: #38bdf8;" title="Webcam Setup & Troubleshooting Guide">
+                      <i data-lucide="help-circle" style="width: 13px; height: 13px;"></i> Help
+                    </button>
                     <label class="btn btn-sm btn-outline" style="cursor: pointer; margin: 0; padding: 4px 10px; font-size: 0.78rem;" title="Upload & scan QR badge image file">
                       <i data-lucide="image" style="width: 13px; height: 13px;"></i> QR File
                       <input type="file" accept="image/*" style="display: none;" onchange="handleQrFileUpload(event, 'trainer')">
@@ -2247,6 +2255,102 @@
           <i data-lucide="check-circle-2" style="width: 14px; height: 14px; color: #10B981;"></i> All backend endpoints running on live database
         </div>
         <button type="button" class="btn btn-secondary btn-sm" onclick="UI.closeModal('modal-guide-tour')">Close Tour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Camera Diagnostics & Setup Guide -->
+  <div class="modal-overlay" id="modal-camera-help">
+    <div class="modal-content" style="max-width: 680px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(14, 165, 233, 0.05)); border-bottom: 1px solid rgba(56, 189, 248, 0.3);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(56, 189, 248, 0.2); border: 1px solid #38BDF8; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">📷</div>
+          <div>
+            <h3 style="font-size: 1.2rem; color: #FFF; margin: 0 0 3px;">Webcam Diagnostics & Troubleshooting Guide</h3>
+            <p class="text-muted" style="font-size: 0.8rem; margin: 0;">கேமரா சரிசெய்யும் வழிகாட்டி — Quick 4-Step Resolution</p>
+          </div>
+        </div>
+        <button class="btn-icon" onclick="UI.closeModal('modal-camera-help')">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+        <!-- Live Diagnostic Box -->
+        <div style="background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); border: 1px solid rgba(56, 189, 248, 0.3); margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <div style="font-weight: 700; color: #FFF; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="activity" style="width: 16px; height: 16px; color: #38BDF8;"></i> Live Camera Hardware Diagnostic
+            </div>
+            <button type="button" class="btn btn-sm btn-primary" onclick="runCameraHardwareDiagnostic()" style="padding: 4px 12px; font-size: 0.78rem;">
+              <i data-lucide="zap" style="width: 13px; height: 13px;"></i> Test Webcam Now
+            </button>
+          </div>
+          <div id="camera-diag-status" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; padding: 10px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            Click <strong>"Test Webcam Now"</strong> to verify hardware access, device drivers, and Chrome permissions.
+          </div>
+        </div>
+
+        <!-- 4 Step Troubleshooting Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 16px;">
+          <!-- 1. Chrome Permission -->
+          <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="font-size: 1.1rem;">🔒</span>
+              <strong style="color: #FFF; font-size: 0.88rem;">1. Chrome Permission (அனுமதி)</strong>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0 0 6px; line-height: 1.4;">
+              Click the <strong>🔒</strong> or <strong>🎚️ (Tune)</strong> icon on the left of <code>127.0.0.1:5000</code> in your address bar.
+            </p>
+            <div style="font-size: 0.74rem; color: #10B981; background: rgba(16,185,129,0.1); padding: 6px 8px; border-radius: 4px; border: 1px solid rgba(16,185,129,0.2);">
+              Turn <strong>Camera</strong> to <strong>Allow</strong> & press <kbd>Ctrl+R</kbd> to refresh.
+            </div>
+          </div>
+
+          <!-- 2. Multiple Tabs -->
+          <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="font-size: 1.1rem;">📑</span>
+              <strong style="color: #FFF; font-size: 0.88rem;">2. Close Other Tabs (டேப்கள்)</strong>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0 0 6px; line-height: 1.4;">
+              On Windows, a webcam can only be used by <strong>one tab or app</strong> at a time.
+            </p>
+            <div style="font-size: 0.74rem; color: #F59E0B; background: rgba(245,158,11,0.1); padding: 6px 8px; border-radius: 4px; border: 1px solid rgba(245,158,11,0.2);">
+              Close extra "Apex Console" tabs or apps like Zoom, then click "Retry Cam".
+            </div>
+          </div>
+
+          <!-- 3. Laptop Shutter -->
+          <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="font-size: 1.1rem;">💻</span>
+              <strong style="color: #FFF; font-size: 0.88rem;">3. Laptop Shutter / Fn Key</strong>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0 0 6px; line-height: 1.4;">
+              Check the physical slider switch above your laptop screen (red dot means closed).
+            </p>
+            <div style="font-size: 0.74rem; color: #38BDF8; background: rgba(56,189,248,0.1); padding: 6px 8px; border-radius: 4px; border: 1px solid rgba(56,189,248,0.2);">
+              Slide it open or press <kbd>Fn + F10</kbd> / <kbd>Fn + F6</kbd> to enable webcam.
+            </div>
+          </div>
+
+          <!-- 4. College Guide Demo -->
+          <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="font-size: 1.1rem;">🎓</span>
+              <strong style="color: #FFF; font-size: 0.88rem;">4. College Guide Demo Backup</strong>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0 0 6px; line-height: 1.4;">
+              Demonstrating on lab computers without webcams?
+            </p>
+            <div style="font-size: 0.74rem; color: #A855F7; background: rgba(168,85,247,0.1); padding: 6px 8px; border-radius: 4px; border: 1px solid rgba(168,85,247,0.2);">
+              Click any <strong>1-Click Badges</strong> or <strong>QR File</strong> to trigger real DB shifts with audio!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: flex-end; background: var(--bg-surface);">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="UI.closeModal('modal-camera-help')">Close</button>
       </div>
     </div>
   </div>

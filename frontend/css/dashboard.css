@@ -1281,6 +1281,8 @@
   font-weight: 600;
   font-size: 0.95rem;
   text-align: center;
+  pointer-events: auto;
+  z-index: 5;
 }
 
 /* 1-Click Simulation Badges */

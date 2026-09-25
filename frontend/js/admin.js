@@ -1577,16 +1577,39 @@ async function startMemberCameraScanner() {
   const viewportBox = document.getElementById('member-scanner-box');
   const idlePrompt = document.getElementById('member-scanner-idle-prompt');
   const statusPill = document.getElementById('member-camera-status-pill');
+  const readerEl = document.getElementById('member-qr-reader');
 
   if (!window.Html5Qrcode) {
     UI.showToast('HTML5 QR Scanner engine not loaded. Please verify internet connectivity.', 'warning');
     return;
   }
 
+  // Mutual exclusion: stop trainer scanner if running to prevent Windows hardware lock
+  if (AdminState.isTrainerScanning) {
+    await stopCameraScanner();
+  }
+
+  if (toggleBtn) {
+    toggleBtn.innerHTML = '<i data-lucide="loader" style="width: 14px; height: 14px;" class="spin"></i> Starting...';
+    toggleBtn.disabled = true;
+  }
+  if (statusPill) {
+    statusPill.innerHTML = '<span class="status-pulse-dot" style="background:#eab308;"></span> Initializing camera feed...';
+  }
+
   try {
-    if (!AdminState.memberScanner) {
-      AdminState.memberScanner = new Html5Qrcode('member-qr-reader');
+    if (AdminState.memberScanner) {
+      try {
+        if (AdminState.memberScanner.isScanning) {
+          await AdminState.memberScanner.stop();
+        }
+      } catch (e) {
+        console.warn('Silent stop error on memberScanner:', e);
+      }
     }
+
+    if (readerEl) readerEl.innerHTML = '';
+    AdminState.memberScanner = new Html5Qrcode('member-qr-reader');
 
     const camRes = await startHtml5Camera(AdminState.memberScanner, (decodedText) => {
       processMemberScan(decodedText);
@@ -1598,20 +1621,29 @@ async function startMemberCameraScanner() {
         toggleBtn.innerHTML = '<i data-lucide="camera-off" style="width: 14px; height: 14px;"></i> Stop Camera';
         toggleBtn.classList.remove('btn-outline');
         toggleBtn.classList.add('btn-secondary');
+        toggleBtn.disabled = false;
       }
       if (viewportBox) viewportBox.classList.add('scanning');
       if (idlePrompt) idlePrompt.style.display = 'none';
-      if (statusPill) statusPill.innerHTML = '<span class="status-pulse-dot"></span> Member Camera Active — Hold QR Pass in viewfinder';
+      if (statusPill) {
+        const camLabel = camRes.label ? ` (${camRes.label.slice(0, 22)})` : '';
+        statusPill.innerHTML = `<span class="status-pulse-dot"></span> Member Camera Active${camLabel} — Hold QR Pass in viewfinder`;
+      }
       UI.refreshIcons();
-      UI.showToast('Member optical camera scanner activated', 'info');
+      UI.showToast('Member optical camera scanner activated', 'success', 'Turnstile Online');
     } else {
       throw (camRes && camRes.error) || new Error('Camera device unavailable');
     }
   } catch (err) {
     console.warn('Member camera access denied or unavailable:', err);
     AdminState.isMemberScanning = false;
-    renderScannerFallback('member');
-    UI.showToast('Physical webcam not detected or blocked in Chrome. Interactive simulator & QR File Upload ready below.', 'warning', 'Camera Notice');
+    if (toggleBtn) {
+      toggleBtn.innerHTML = '<i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera';
+      toggleBtn.disabled = false;
+    }
+    const interpreted = interpretCameraError(err);
+    renderScannerFallback('member', interpreted);
+    showCameraTroubleshootToast(interpreted);
     if (viewportBox) viewportBox.classList.remove('scanning');
     if (idlePrompt) idlePrompt.style.display = 'flex';
   }
@@ -1636,6 +1668,7 @@ async function stopMemberCameraScanner() {
     toggleBtn.innerHTML = '<i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera';
     toggleBtn.classList.remove('btn-secondary');
     toggleBtn.classList.add('btn-outline');
+    toggleBtn.disabled = false;
   }
   if (viewportBox) viewportBox.classList.remove('scanning');
   if (idlePrompt) {
@@ -2619,60 +2652,171 @@ function hideTrainerHud() {
 // --------------------------------------------------------------------------
 
 /**
- * Universal camera starter with device detection and constraint fallbacks
+ * Intelligent camera error interpreter with specific troubleshooting advice
+ */
+function interpretCameraError(err) {
+  const errStr = (err && (err.name || err.message || err.toString())) || '';
+  const errLower = errStr.toLowerCase();
+
+  if (errLower.includes('notallowed') || errLower.includes('permission denied')) {
+    return {
+      type: 'permission_denied',
+      title: 'Camera Blocked in Chrome',
+      badge: '🔒 Camera Blocked in Chrome',
+      message: 'Chrome blocked camera access for http://127.0.0.1:5000.',
+      action: 'Click the 🔒 icon in the address bar (left of 127.0.0.1:5000) → Turn Camera to "Allow" → Refresh page.',
+      tamil: 'Chrome முகவரிப் பட்டியில் உள்ள 🔒 ஐகானை கிளிக் செய்து Camera-வை "Allow" செய்யவும், பிறகு Refresh செய்யவும்.'
+    };
+  }
+  if (errLower.includes('notreadable') || errLower.includes('could not start video source') || errLower.includes('trackstarterror') || errLower.includes('in use') || errLower.includes('device is in use')) {
+    return {
+      type: 'in_use',
+      title: 'Webcam In Use / Locked',
+      badge: '⚠️ Camera In Use by Another Tab',
+      message: 'Another application or browser tab is locking the webcam.',
+      action: 'Close other "Apex Console" tabs in Chrome or close apps like Zoom/Teams, then click "Retry Cam".',
+      tamil: 'Chrome-ல் திறந்துள்ள மற்ற Apex Console டேப்களை மூடிவிட்டு "Retry Cam" கிளிக் செய்யவும்.'
+    };
+  }
+  if (errLower.includes('notfound') || errLower.includes('devicesnotfound') || errLower.includes('no camera') || errLower.includes('requested device not found')) {
+    return {
+      type: 'not_found',
+      title: 'No Webcam Detected',
+      badge: '📷 Hardware Not Found',
+      message: 'No physical camera hardware was detected on this laptop.',
+      action: 'Check your laptop camera privacy slider switch or keyboard Fn key (Fn+F10 / Fn+F6). Or use 1-Click Simulator below.',
+      tamil: 'லேப்டாப்பில் கேமரா ஸ்லைடர் சுவிட்ச் அல்லது Fn key ஆன் செய்யப்பட்டுள்ளதா என பார்க்கவும்.'
+    };
+  }
+  return {
+    type: 'unknown',
+    title: 'Camera Standby / Blocked',
+    badge: '📷 Camera Unavailable',
+    message: errStr || 'Could not initialize optical webcam feed.',
+    action: 'Click "Allow" on Chrome camera prompt, close duplicate tabs, or use 1-Click Simulation below.',
+    tamil: 'Chrome-ல் Allow கொடுக்கவும் அல்லது கீழே உள்ள 1-Click Test பட்டனை பயன்படுத்தவும்.'
+  };
+}
+
+function showCameraTroubleshootToast(info) {
+  UI.showToast(`${info.action}`, 'warning', info.title);
+}
+
+/**
+ * Universal camera starter with multi-device detection, warm-up probe, and constraint fallbacks
  */
 async function startHtml5Camera(scannerInstance, onScanSuccess) {
-  const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+  // Dynamic qrbox callback so it never exceeds video or container bounds
+  const getQrBox = (viewfinderWidth, viewfinderHeight) => {
+    const minEdge = Math.min(viewfinderWidth || 250, viewfinderHeight || 250);
+    const boxSize = Math.max(Math.floor(minEdge * 0.72), 120);
+    const safeSize = Math.min(boxSize, minEdge - 16);
+    return { width: safeSize, height: safeSize };
+  };
 
-  // 1. Try querying available video hardware devices
-  let cameraDeviceId = null;
-  try {
-    const devices = await Html5Qrcode.getCameras();
-    if (devices && devices.length > 0) {
-      cameraDeviceId = devices[0].id;
-    }
-  } catch (e) {
-    console.warn('Camera device enumeration unavailable, trying constraints:', e);
-  }
+  const config = {
+    fps: 10,
+    qrbox: getQrBox,
+    aspectRatio: 1.0,
+    disableFlip: false
+  };
 
-  // 2. Try starting with device ID if found
-  if (cameraDeviceId) {
+  let lastError = null;
+
+  // Step 1: Probe direct getUserMedia to verify permissions & awaken hardware
+  if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+    let probeStream = null;
     try {
-      await scannerInstance.start(
-        cameraDeviceId,
-        config,
-        onScanSuccess,
-        () => {}
-      );
-      return { success: true };
-    } catch (devErr) {
-      console.warn('Starting camera by deviceId failed, attempting fallback constraints:', devErr);
+      probeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    } catch (probeErr) {
+      console.warn('[Camera] Direct getUserMedia probe error:', probeErr);
+      return { success: false, error: probeErr };
+    } finally {
+      if (probeStream) {
+        probeStream.getTracks().forEach(track => {
+          try { track.stop(); } catch (e) {}
+        });
+      }
+    }
+    // Brief 80ms yield for OS camera driver to release device handle
+    await new Promise(r => setTimeout(r, 80));
+  }
+
+  // Step 2: Enumerate hardware devices
+  let cameraDevices = [];
+  try {
+    cameraDevices = await Html5Qrcode.getCameras();
+    console.log('[Camera] Available devices:', cameraDevices);
+  } catch (enumErr) {
+    console.warn('[Camera] getCameras enumeration error:', enumErr);
+    lastError = enumErr;
+  }
+
+  // Step 3: Try all enumerated hardware devices
+  if (cameraDevices && cameraDevices.length > 0) {
+    for (const dev of cameraDevices) {
+      try {
+        console.log(`[Camera] Trying device ${dev.id} (${dev.label || 'Webcam'})...`);
+        await scannerInstance.start(
+          dev.id,
+          config,
+          onScanSuccess,
+          () => {}
+        );
+        return { success: true, deviceId: dev.id, label: dev.label };
+      } catch (devErr) {
+        console.warn(`[Camera] Device ${dev.id} failed:`, devErr);
+        lastError = devErr;
+      }
     }
   }
 
-  // 3. Fallback to facingMode: 'user'
+  // Step 4: Fallback constraint - facingMode: ideal 'environment'
   try {
+    console.log('[Camera] Fallback: facingMode ideal environment');
     await scannerInstance.start(
-      { facingMode: 'user' },
+      { facingMode: { ideal: 'environment' } },
       config,
       onScanSuccess,
       () => {}
     );
-    return { success: true };
-  } catch (userErr) {
-    // 4. Fallback to facingMode: 'environment' (standard for desktop webcams)
-    try {
-      await scannerInstance.start(
-        { facingMode: 'environment' },
-        config,
-        onScanSuccess,
-        () => {}
-      );
-      return { success: true };
-    } catch (finalErr) {
-      return { success: false, error: finalErr };
-    }
+    return { success: true, mode: 'environment' };
+  } catch (envErr) {
+    console.warn('[Camera] Fallback environment failed:', envErr);
+    lastError = envErr;
   }
+
+  // Step 5: Fallback constraint - facingMode: ideal 'user'
+  try {
+    console.log('[Camera] Fallback: facingMode ideal user');
+    await scannerInstance.start(
+      { facingMode: { ideal: 'user' } },
+      config,
+      onScanSuccess,
+      () => {}
+    );
+    return { success: true, mode: 'user' };
+  } catch (userErr) {
+    console.warn('[Camera] Fallback user failed:', userErr);
+    lastError = userErr;
+  }
+
+  // Step 6: Final unconstrained fallback
+  try {
+    console.log('[Camera] Final unconstrained fallback');
+    await scannerInstance.start(
+      {},
+      config,
+      onScanSuccess,
+      () => {}
+    );
+    return { success: true, mode: 'default' };
+  } catch (finalErr) {
+    console.warn('[Camera] Final fallback failed:', finalErr);
+    lastError = finalErr;
+  }
+
+  return { success: false, error: lastError };
 }
 
 /**
@@ -2733,19 +2877,31 @@ async function resetTrainerShift(trainerId) {
 /**
  * Render friendly fallback inside camera viewport when webcam is unavailable
  */
-function renderScannerFallback(type) {
+function renderScannerFallback(type, errInfo) {
   const isTrainer = type === 'trainer';
   const promptEl = document.getElementById(isTrainer ? 'scanner-idle-prompt' : 'member-scanner-idle-prompt');
   if (!promptEl) return;
 
+  const info = errInfo || {
+    badge: '📷 Camera Standby',
+    title: 'Camera Standby',
+    action: 'Click "Start Camera" or use 1-Click Simulation below:',
+    tamil: 'கேமராவை ஆன் செய்யவும் அல்லது கீழே உள்ள 1-Click பட்டன்களை அழுத்தவும்:'
+  };
+
+  const badgeColor = info.type === 'permission_denied' ? '#ef4444' : (info.type === 'in_use' ? '#f59e0b' : '#38bdf8');
+
   if (isTrainer) {
     promptEl.innerHTML = `
-      <div style="text-align: center; padding: 12px; color: #FFF; width: 100%; max-width: 270px;">
-        <div style="font-size: 1.5rem; margin-bottom: 2px;">📷</div>
-        <div style="font-weight: 800; font-size: 0.85rem; color: #FFF; margin-bottom: 2px;">Camera Standby / Blocked</div>
-        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.3;">
-          Click <strong>Allow</strong> on browser camera prompt, or use 1-Click Simulation below:
+      <div style="text-align: center; padding: 10px 14px; color: #FFF; width: 100%; max-width: 290px;">
+        <div style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; background: rgba(255,255,255,0.08); font-size: 0.7rem; font-weight: 700; color: ${badgeColor}; margin-bottom: 6px; border: 1px solid ${badgeColor}40;">
+          ${info.badge || '📷 Camera Notice'}
         </div>
+        <div style="font-size: 0.72rem; color: #E2E8F0; margin-bottom: 4px; line-height: 1.3;">
+          ${info.action}
+        </div>
+        ${info.tamil ? `<div style="font-size: 0.68rem; color: #94A3B8; margin-bottom: 8px; font-style: italic;">${info.tamil}</div>` : ''}
+
         <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px;">
           <button type="button" class="btn btn-sm btn-primary" onclick="simulateTrainerScan('TRN-001')" style="font-size: 0.74rem; padding: 5px 8px; justify-content: center;">
             ⚡ Scan Marcus (TRN-001)
@@ -2767,17 +2923,23 @@ function renderScannerFallback(type) {
           <button type="button" class="btn btn-sm btn-outline" onclick="startCameraScanner()" style="font-size: 0.7rem; padding: 3px 8px;">
             <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Retry Cam
           </button>
+          <button type="button" class="btn btn-sm btn-outline" onclick="openCameraHelpModal()" style="font-size: 0.7rem; padding: 3px 8px; color: #38bdf8;" title="Webcam troubleshooting guide">
+            <i data-lucide="help-circle" style="width: 12px; height: 12px;"></i> Help
+          </button>
         </div>
       </div>
     `;
   } else {
     promptEl.innerHTML = `
-      <div style="text-align: center; padding: 12px; color: #FFF; width: 100%; max-width: 270px;">
-        <div style="font-size: 1.5rem; margin-bottom: 2px;">📷</div>
-        <div style="font-weight: 800; font-size: 0.85rem; color: #FFF; margin-bottom: 2px;">Turnstile Camera Standby</div>
-        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.3;">
-          Click <strong>Allow</strong> on browser camera prompt, or use 1-Click Simulation below:
+      <div style="text-align: center; padding: 10px 14px; color: #FFF; width: 100%; max-width: 290px;">
+        <div style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; background: rgba(255,255,255,0.08); font-size: 0.7rem; font-weight: 700; color: ${badgeColor}; margin-bottom: 6px; border: 1px solid ${badgeColor}40;">
+          ${info.badge || '📷 Turnstile Camera Notice'}
         </div>
+        <div style="font-size: 0.72rem; color: #E2E8F0; margin-bottom: 4px; line-height: 1.3;">
+          ${info.action}
+        </div>
+        ${info.tamil ? `<div style="font-size: 0.68rem; color: #94A3B8; margin-bottom: 8px; font-style: italic;">${info.tamil}</div>` : ''}
+
         <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px;">
           <button type="button" class="btn btn-sm btn-primary" onclick="simulateMemberScan('APX-1008')" style="font-size: 0.74rem; padding: 5px 8px; justify-content: center; background: #9333ea; border-color: #a855f7; color: #FFF;">
             🎓 Scan Student Pass Emily
@@ -2798,6 +2960,9 @@ function renderScannerFallback(type) {
           </label>
           <button type="button" class="btn btn-sm btn-outline" onclick="startMemberCameraScanner()" style="font-size: 0.7rem; padding: 3px 8px;">
             <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Retry Cam
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" onclick="openCameraHelpModal()" style="font-size: 0.7rem; padding: 3px 8px; color: #a855f7;" title="Webcam troubleshooting guide">
+            <i data-lucide="help-circle" style="width: 12px; height: 12px;"></i> Help
           </button>
         </div>
       </div>
@@ -2826,10 +2991,32 @@ async function startCameraScanner() {
     return;
   }
 
+  // Mutual exclusion: stop member scanner if running to prevent Windows hardware lock
+  if (AdminState.isMemberScanning) {
+    await stopMemberCameraScanner();
+  }
+
+  if (toggleBtn) {
+    toggleBtn.innerHTML = '<i data-lucide="loader" style="width: 14px; height: 14px;" class="spin"></i> Starting...';
+    toggleBtn.disabled = true;
+  }
+  if (statusPill) {
+    statusPill.innerHTML = '<span class="status-pulse-dot" style="background:#eab308;"></span> Initializing camera feed...';
+  }
+
   try {
-    if (!AdminState.trainerScanner) {
-      AdminState.trainerScanner = new Html5Qrcode('trainer-qr-reader');
+    if (AdminState.trainerScanner) {
+      try {
+        if (AdminState.trainerScanner.isScanning) {
+          await AdminState.trainerScanner.stop();
+        }
+      } catch (e) {
+        console.warn('Silent stop error on trainerScanner:', e);
+      }
     }
+
+    if (readerEl) readerEl.innerHTML = '';
+    AdminState.trainerScanner = new Html5Qrcode('trainer-qr-reader');
 
     const camRes = await startHtml5Camera(AdminState.trainerScanner, (decodedText) => {
       processTrainerScan(decodedText);
@@ -2841,20 +3028,29 @@ async function startCameraScanner() {
         toggleBtn.innerHTML = '<i data-lucide="camera-off" style="width: 14px; height: 14px;"></i> Stop Camera';
         toggleBtn.classList.remove('btn-outline');
         toggleBtn.classList.add('btn-secondary');
+        toggleBtn.disabled = false;
       }
       if (viewportBox) viewportBox.classList.add('scanning');
       if (idlePrompt) idlePrompt.style.display = 'none';
-      if (statusPill) statusPill.innerHTML = '<span class="status-pulse-dot"></span> Camera Active — Hold Trainer QR in viewfinder';
+      if (statusPill) {
+        const camLabel = camRes.label ? ` (${camRes.label.slice(0, 22)})` : '';
+        statusPill.innerHTML = `<span class="status-pulse-dot"></span> Camera Active${camLabel} — Hold Trainer QR in viewfinder`;
+      }
       UI.refreshIcons();
-      UI.showToast('Optical camera scanner activated', 'info');
+      UI.showToast('Optical camera scanner activated', 'success', 'Webcam Online');
     } else {
       throw (camRes && camRes.error) || new Error('Camera device unavailable');
     }
   } catch (err) {
     console.warn('Webcam start failed or permission denied:', err);
     AdminState.isTrainerScanning = false;
-    renderScannerFallback('trainer');
-    UI.showToast('Physical webcam not detected or blocked in Chrome. Interactive simulator & QR File Upload ready below.', 'warning', 'Camera Notice');
+    if (toggleBtn) {
+      toggleBtn.innerHTML = '<i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera';
+      toggleBtn.disabled = false;
+    }
+    const interpreted = interpretCameraError(err);
+    renderScannerFallback('trainer', interpreted);
+    showCameraTroubleshootToast(interpreted);
     if (viewportBox) viewportBox.classList.remove('scanning');
     if (idlePrompt) idlePrompt.style.display = 'flex';
   }
@@ -2879,6 +3075,7 @@ async function stopCameraScanner() {
     toggleBtn.innerHTML = '<i data-lucide="camera" style="width: 14px; height: 14px;"></i> Start Camera';
     toggleBtn.classList.remove('btn-secondary');
     toggleBtn.classList.add('btn-outline');
+    toggleBtn.disabled = false;
   }
   if (viewportBox) viewportBox.classList.remove('scanning');
   if (idlePrompt) {
@@ -2891,6 +3088,89 @@ async function stopCameraScanner() {
   }
   if (statusPill) statusPill.innerHTML = '<i data-lucide="info" style="width: 13px; height: 13px;"></i> Scans QR badges automatically when presented';
   UI.refreshIcons();
+}
+
+/**
+ * Diagnostics & Camera Setup Modal Helpers
+ */
+function openCameraHelpModal() {
+  UI.openModal('modal-camera-help');
+  runCameraHardwareDiagnostic();
+}
+
+async function runCameraHardwareDiagnostic() {
+  const diagEl = document.getElementById('camera-diag-status');
+  if (!diagEl) return;
+
+  diagEl.innerHTML = '<div style="display:flex; align-items:center; gap:8px;"><div class="spinner" style="width:14px; height:14px;"></div> Probing webcam hardware and Chrome permissions...</div>';
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    diagEl.innerHTML = `
+      <div style="color: #ef4444; font-weight:700;">❌ MediaDevices API Unsupported</div>
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">
+        Your browser does not support webcam streaming or you are not in a secure origin (http://127.0.0.1:5000 is supported).
+      </div>
+    `;
+    return;
+  }
+
+  let permState = 'prompt';
+  if (navigator.permissions && navigator.permissions.query) {
+    try {
+      const p = await navigator.permissions.query({ name: 'camera' });
+      permState = p.state;
+    } catch (e) {}
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const tracks = stream.getVideoTracks();
+    const trackLabel = (tracks[0] && tracks[0].label) || 'Generic Webcam Device';
+
+    // Stop tracks immediately after diagnostic probe
+    tracks.forEach(t => t.stop());
+
+    let deviceListHtml = '';
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      if (devices && devices.length > 0) {
+        deviceListHtml = devices.map(d => `<li style="margin:2px 0;">📹 ${d.label || 'Webcam (' + d.id.slice(0, 10) + '...)'}</li>`).join('');
+      }
+    } catch (e) {}
+
+    diagEl.innerHTML = `
+      <div style="color: #10b981; font-weight:700; display:flex; align-items:center; gap:6px;">
+        <i data-lucide="check-circle" style="width:16px; height:16px; color:#10b981;"></i> Webcam Hardware Online & Operational!
+      </div>
+      <div style="font-size:0.78rem; color:#E2E8F0; margin-top:4px;">
+        <strong>Active Device:</strong> ${trackLabel} | <strong>Permission:</strong> ${permState.toUpperCase()}
+      </div>
+      ${deviceListHtml ? `<ul style="margin:6px 0 0 16px; padding:0; font-size:0.75rem; color:var(--text-muted);">${deviceListHtml}</ul>` : ''}
+      <div style="margin-top:8px;">
+        <button class="btn btn-sm btn-primary" onclick="UI.closeModal('modal-camera-help'); startCameraScanner();" style="padding:4px 10px; font-size:0.75rem;">
+          <i data-lucide="camera" style="width:12px; height:12px;"></i> Launch Scanner Now
+        </button>
+      </div>
+    `;
+    UI.refreshIcons();
+  } catch (err) {
+    const interpreted = interpretCameraError(err);
+    diagEl.innerHTML = `
+      <div style="color: #ef4444; font-weight:700; display:flex; align-items:center; gap:6px;">
+        <i data-lucide="alert-triangle" style="width:16px; height:16px; color:#ef4444;"></i> ${interpreted.title} (${err.name || 'Error'})
+      </div>
+      <div style="font-size:0.78rem; color:#F87171; margin-top:4px; font-weight:600;">
+        ${interpreted.message}
+      </div>
+      <div style="font-size:0.76rem; color:#E2E8F0; margin-top:4px; line-height:1.4;">
+        👉 <strong>Action Required:</strong> ${interpreted.action}
+      </div>
+      <div style="font-size:0.74rem; color:#94A3B8; margin-top:4px; font-style:italic;">
+        👉 <strong>தமிழ்:</strong> ${interpreted.tamil}
+      </div>
+    `;
+    UI.refreshIcons();
+  }
 }
 
 // --------------------------------------------------------------------------

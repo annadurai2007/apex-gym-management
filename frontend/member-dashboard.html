@@ -7,8 +7,9 @@
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- QR Code Engine -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- QR Code Engine (Local primary + CDN fallback) -->
+  <script src="/js/qrcode.min.js"></script>
+  <script>window.QRCode || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>')</script>
 
   <!-- CSS -->
   <link rel="stylesheet" href="/css/variables.css">
