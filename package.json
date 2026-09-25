@@ -5,11 +5,10 @@
   "main": "dev-server.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node dev-server.js",
-    "dev": "node dev-server.js",
-    "py-start": "python run.py",
-    "init-db": "python run.py --init-db",
-    "test": "python tests/test_system.py"
+    "start": "py run.py",
+    "dev": "py run.py",
+    "init-db": "py run.py --init-db",
+    "test": "py -m unittest tests/test_system.py"
   },
   "keywords": [
     "gym-management",
