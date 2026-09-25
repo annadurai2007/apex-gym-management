@@ -58,6 +58,25 @@ const Auth = {
     }
   },
 
+  async register(registrationData) {
+    const result = await apiFetch('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(registrationData)
+    });
+
+    if (result.success && result.data && result.data.token) {
+      this.setSession(result.data.token, result.data.user);
+      return { 
+        success: true, 
+        user: result.data.user, 
+        member_code: result.data.member_code,
+        message: result.message 
+      };
+    } else {
+      return { success: false, message: result.message || 'Registration failed' };
+    }
+  },
+
   logout() {
     this.clearSession();
     window.location.href = '/login';

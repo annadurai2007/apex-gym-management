@@ -60,6 +60,56 @@ class SystemIntegrationTests(unittest.TestCase):
         data = res.get_json()
         self.assertFalse(data['success'])
 
+    def test_04b_auth_register_member(self):
+        """Verify public member self-registration with Student Scholar Pass."""
+        reg_payload = {
+            'full_name': 'Kavitha Raman',
+            'email': 'kavitha.student@college.edu',
+            'password': 'Student@2026',
+            'phone': '+91 98401 23456',
+            'gender': 'female',
+            'plan_id': 5,
+            'is_student': True,
+            'student_id': 'ANNA-UNIV-CS-2024'
+        }
+        res = self.client.post('/api/auth/register', json=reg_payload)
+        self.assertEqual(res.status_code, 201)
+        data = res.get_json()
+        self.assertTrue(data['success'])
+        self.assertIn('token', data['data'])
+        self.assertEqual(data['data']['user']['role'], 'member')
+        self.assertTrue(data['data']['member_code'].startswith('APX-'))
+        self.assertEqual(data['data']['user']['profile']['full_name'], 'Kavitha Raman')
+
+        # Verify new user can immediately log in
+        login_res = self.client.post('/api/auth/login', json={
+            'email': 'kavitha.student@college.edu',
+            'password': 'Student@2026'
+        })
+        self.assertEqual(login_res.status_code, 200)
+        login_data = login_res.get_json()
+        self.assertTrue(login_data['success'])
+        self.assertEqual(login_data['data']['user']['email'], 'kavitha.student@college.edu')
+
+    def test_04c_auth_register_validation(self):
+        """Verify duplicate email rejection and password length validation."""
+        # 1. Duplicate email rejection
+        res_dup = self.client.post('/api/auth/register', json={
+            'full_name': 'Duplicate User',
+            'email': 'kavitha.student@college.edu',
+            'password': 'Password@123'
+        })
+        self.assertEqual(res_dup.status_code, 400)
+        self.assertIn('already exists', res_dup.get_json()['message'])
+
+        # 2. Short password rejection
+        res_short = self.client.post('/api/auth/register', json={
+            'full_name': 'Short Pass',
+            'email': 'shortpass@example.com',
+            'password': '123'
+        })
+        self.assertEqual(res_short.status_code, 400)
+
     def test_05_dashboard_stats(self):
         """Verify admin dashboard statistics queries."""
         headers = {'Authorization': f"Bearer {self.admin_token}"}

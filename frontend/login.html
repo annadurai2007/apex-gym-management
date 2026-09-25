@@ -181,6 +181,64 @@
       to { transform: rotate(360deg); }
     }
 
+    .auth-tabs {
+      display: flex;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 4px;
+      margin-bottom: 22px;
+      gap: 4px;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.86rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .auth-tab-btn.active {
+      background: var(--accent-primary);
+      color: #0b0f0d;
+      font-weight: 800;
+      box-shadow: 0 4px 14px rgba(163, 230, 53, 0.28);
+    }
+    .auth-tab-btn:hover:not(.active) {
+      color: #FFF;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .auth-panel {
+      display: none;
+      animation: fadeIn 0.22s ease-in-out;
+    }
+    .auth-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 600px) {
+      .form-row-2 {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+    }
+
     @media (max-width: 900px) {
       .auth-wrapper { grid-template-columns: 1fr; }
       .auth-visual { display: none; }
@@ -216,115 +274,231 @@
 
     <!-- Right Login Form Panel -->
     <div class="auth-form-container">
-      <div style="margin-bottom: 32px;">
-        <h1 style="font-size: 2.2rem; color: #FFF; margin-bottom: 8px;">Welcome Back</h1>
-        <p class="text-muted">Sign in to your Apex Fitness Club account</p>
+      <div style="margin-bottom: 20px;">
+        <h1 style="font-size: 2.1rem; color: #FFF; margin-bottom: 6px;" id="auth-title">Welcome Back</h1>
+        <p class="text-muted" id="auth-subtitle">Sign in to your Apex Fitness Club account</p>
       </div>
 
-      <!-- 1-Click Instant Demo Login for College Project Guide & Evaluators -->
-      <div class="demo-guide-card">
-        <div class="demo-guide-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(163, 230, 53, 0.2); display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-size: 1rem;">🎓</div>
-            <div>
-              <div style="font-size: 0.86rem; font-weight: 700; color: #FFF; line-height: 1.2;">Project Guide & Demo Access</div>
-              <div style="font-size: 0.72rem; color: var(--text-muted);">1-Click Instant Login (No typing required)</div>
+      <!-- Segmented Tab Switcher -->
+      <div class="auth-tabs" role="tablist">
+        <button type="button" class="auth-tab-btn active" id="tab-signin-btn" onclick="switchAuthTab('signin')" role="tab" aria-selected="true">
+          <i data-lucide="log-in" style="width: 15px; height: 15px;"></i> Sign In
+        </button>
+        <button type="button" class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')" role="tab" aria-selected="false">
+          <i data-lucide="user-plus" style="width: 15px; height: 15px;"></i> New Member Sign Up <span class="badge" style="font-size:0.6rem; padding:1px 5px; background: #9333ea; color: #FFF; margin-left: 4px;">🎓 Pass</span>
+        </button>
+      </div>
+
+      <!-- PANEL 1: SIGN IN -->
+      <div id="signin-panel" class="auth-panel active">
+        <!-- 1-Click Instant Demo Login for College Project Guide & Evaluators -->
+        <div class="demo-guide-card">
+          <div class="demo-guide-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(163, 230, 53, 0.2); display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-size: 1rem;">🎓</div>
+              <div>
+                <div style="font-size: 0.86rem; font-weight: 700; color: #FFF; line-height: 1.2;">Project Guide & Demo Access</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">1-Click Instant Login (No typing required)</div>
+              </div>
             </div>
+            <span class="badge badge-lime" style="font-size: 0.65rem; padding: 2px 7px;">INSTANT DEMO</span>
           </div>
-          <span class="badge badge-lime" style="font-size: 0.65rem; padding: 2px 7px;">INSTANT DEMO</span>
-        </div>
 
-        <div class="demo-role-grid">
-          <!-- Admin -->
-          <button type="button" class="demo-role-btn admin-role" onclick="quickDemoLogin('admin@apexgym.com', 'Admin@123', 'admin', this)">
-            <div class="role-icon-box">👑</div>
-            <div class="role-details">
-              <span class="role-title">Apex Administrator <span class="badge badge-danger" style="font-size:0.6rem; padding:1px 5px;">Full Access</span></span>
-              <span class="role-sub">Executive Dashboard &bull; RBAC &bull; Financial Ledger</span>
-            </div>
-            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
-          </button>
+          <div class="demo-role-grid">
+            <!-- Admin -->
+            <button type="button" class="demo-role-btn admin-role" onclick="quickDemoLogin('admin@apexgym.com', 'Admin@123', 'admin', this)">
+              <div class="role-icon-box">👑</div>
+              <div class="role-details">
+                <span class="role-title">Apex Administrator <span class="badge badge-danger" style="font-size:0.6rem; padding:1px 5px;">Full Access</span></span>
+                <span class="role-sub">Executive Dashboard &bull; RBAC &bull; Financial Ledger</span>
+              </div>
+              <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
+            </button>
 
-          <!-- Staff -->
-          <button type="button" class="demo-role-btn staff-role" onclick="quickDemoLogin('staff@apexgym.com', 'Staff@123', 'staff', this)">
-            <div class="role-icon-box">🛡️</div>
-            <div class="role-details">
-              <span class="role-title">Front-Desk Staff <span class="badge badge-warning" style="font-size:0.6rem; padding:1px 5px;">Staff RBAC</span></span>
-              <span class="role-sub">Attendance Desk &bull; Member Registration</span>
-            </div>
-            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
-          </button>
+            <!-- Staff -->
+            <button type="button" class="demo-role-btn staff-role" onclick="quickDemoLogin('staff@apexgym.com', 'Staff@123', 'staff', this)">
+              <div class="role-icon-box">🛡️</div>
+              <div class="role-details">
+                <span class="role-title">Front-Desk Staff <span class="badge badge-warning" style="font-size:0.6rem; padding:1px 5px;">Staff RBAC</span></span>
+                <span class="role-sub">Attendance Desk &bull; Member Registration</span>
+              </div>
+              <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
+            </button>
 
-          <!-- Trainer -->
-          <button type="button" class="demo-role-btn trainer-role" onclick="quickDemoLogin('marcus@apexgym.com', 'Trainer@123', 'trainer', this)">
-            <div class="role-icon-box">🏋️</div>
-            <div class="role-details">
-              <span class="role-title">Head Coach Marcus <span class="badge badge-info" style="font-size:0.6rem; padding:1px 5px;">Coach</span></span>
-              <span class="role-sub">Client Workout Splits &bull; Nutrition Macros</span>
-            </div>
-            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
-          </button>
+            <!-- Trainer -->
+            <button type="button" class="demo-role-btn trainer-role" onclick="quickDemoLogin('marcus@apexgym.com', 'Trainer@123', 'trainer', this)">
+              <div class="role-icon-box">🏋️</div>
+              <div class="role-details">
+                <span class="role-title">Head Coach Marcus <span class="badge badge-info" style="font-size:0.6rem; padding:1px 5px;">Coach</span></span>
+                <span class="role-sub">Client Workout Splits &bull; Nutrition Macros</span>
+              </div>
+              <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
+            </button>
 
-          <!-- Regular Elite Member -->
-          <button type="button" class="demo-role-btn member-role" onclick="quickDemoLogin('alex@apexgym.com', 'Member@123', 'member', this)">
-            <div class="role-icon-box">🏃</div>
-            <div class="role-details">
-              <span class="role-title">Elite Member Alex <span class="badge badge-success" style="font-size:0.6rem; padding:1px 5px;">Platinum</span></span>
-              <span class="role-sub">Member Portal &bull; Turnstile QR &bull; Invoices</span>
-            </div>
-            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
-          </button>
+            <!-- Regular Elite Member -->
+            <button type="button" class="demo-role-btn member-role" onclick="quickDemoLogin('alex@apexgym.com', 'Member@123', 'member', this)">
+              <div class="role-icon-box">🏃</div>
+              <div class="role-details">
+                <span class="role-title">Elite Member Alex <span class="badge badge-success" style="font-size:0.6rem; padding:1px 5px;">Platinum</span></span>
+                <span class="role-sub">Member Portal &bull; Turnstile QR &bull; Invoices</span>
+              </div>
+              <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
+            </button>
 
-          <!-- College Student Member -->
-          <button type="button" class="demo-role-btn student-role" onclick="quickDemoLogin('emily@apexgym.com', 'Member@123', 'student', this)">
-            <div class="role-icon-box">🎓</div>
-            <div class="role-details">
-              <span class="role-title">Student Member Emily <span class="badge" style="font-size:0.6rem; padding:1px 5px; background: #9333ea; color: #FFF;">Student Pass</span></span>
-              <span class="role-sub">College Discount Pass &bull; Campus ID Verified</span>
-            </div>
-            <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
-          </button>
-        </div>
-      </div>
-
-      <div style="display: flex; align-items: center; gap: 12px; margin: 18px 0 20px;">
-        <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
-        <span style="font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Or Manual Sign-In</span>
-        <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
-      </div>
-
-      <!-- Login Form -->
-      <form id="login-form">
-        <div class="form-group">
-          <label class="form-label" for="login-email">Email Address</label>
-          <input type="email" id="login-email" class="form-input" placeholder="name@apexgym.com" required autofocus>
-        </div>
-
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px;">
-            <label class="form-label" for="login-password" style="margin-bottom: 0;">Password</label>
-            <a href="#" onclick="UI.showToast('Demo accounts are pre-filled above.', 'info')" style="font-size: 0.78rem; color: var(--accent-primary); text-decoration: none;">Forgot Password?</a>
-          </div>
-          <div style="position: relative;">
-            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
-            <button type="button" id="toggle-pw-btn" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer;" aria-label="Toggle password visibility">
-              <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+            <!-- College Student Member -->
+            <button type="button" class="demo-role-btn student-role" onclick="quickDemoLogin('emily@apexgym.com', 'Member@123', 'student', this)">
+              <div class="role-icon-box">🎓</div>
+              <div class="role-details">
+                <span class="role-title">Student Member Emily <span class="badge" style="font-size:0.6rem; padding:1px 5px; background: #9333ea; color: #FFF;">Student Pass</span></span>
+                <span class="role-sub">College Discount Pass &bull; Campus ID Verified</span>
+              </div>
+              <span class="role-action-pill">Log In <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i></span>
             </button>
           </div>
         </div>
 
-        <div style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" id="remember-me" checked style="accent-color: var(--accent-primary); cursor: pointer;">
-          <label for="remember-me" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">Keep me authenticated on this workstation</label>
+        <div style="display: flex; align-items: center; gap: 12px; margin: 18px 0 20px;">
+          <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
+          <span style="font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Or Manual Sign-In</span>
+          <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
         </div>
 
-        <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" style="width: 100%;">
-          Sign In to Apex <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
-        </button>
-      </form>
+        <!-- Login Form -->
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email Address</label>
+            <input type="email" id="login-email" class="form-input" placeholder="name@apexgym.com" required autofocus>
+          </div>
 
-      <div style="text-align: center; margin-top: 32px; font-size: 0.88rem; color: var(--text-muted);">
-        Don't have a membership? <a href="/#plans" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;">Choose a Plan</a>
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px;">
+              <label class="form-label" for="login-password" style="margin-bottom: 0;">Password</label>
+              <a href="#" onclick="UI.showToast('Demo accounts are pre-filled above.', 'info')" style="font-size: 0.78rem; color: var(--accent-primary); text-decoration: none;">Forgot Password?</a>
+            </div>
+            <div style="position: relative;">
+              <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+              <button type="button" id="toggle-pw-btn" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer;" aria-label="Toggle password visibility">
+                <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="remember-me" checked style="accent-color: var(--accent-primary); cursor: pointer;">
+            <label for="remember-me" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">Keep me authenticated on this workstation</label>
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" style="width: 100%;">
+            Sign In to Apex <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 26px; font-size: 0.88rem; color: var(--text-muted);">
+          Don't have a membership? <a href="javascript:void(0)" onclick="switchAuthTab('register')" style="color: var(--accent-primary); text-decoration: none; font-weight: 700;">Register as New Member 🎓</a>
+        </div>
+      </div>
+
+      <!-- PANEL 2: NEW MEMBER REGISTRATION -->
+      <div id="register-panel" class="auth-panel">
+        <div style="background: rgba(20, 24, 22, 0.75); border: 1px solid var(--border-medium); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+            <div>
+              <span class="badge badge-lime" style="font-size: 0.68rem; margin-bottom: 4px;">DIGITAL ONBOARDING</span>
+              <h3 style="color: #FFF; font-size: 1.12rem; font-weight: 800; margin: 0;">New Athlete & Student Sign Up</h3>
+            </div>
+            <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(163, 230, 53, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+              🎟️
+            </div>
+          </div>
+
+          <!-- Register Form -->
+          <form id="register-form">
+            <div class="form-group">
+              <label class="form-label" for="reg-name">Full Name *</label>
+              <input type="text" id="reg-name" class="form-input" placeholder="e.g. Emily Zhang or Alex Rivera" required>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="reg-email">Email Address *</label>
+                <input type="email" id="reg-email" class="form-input" placeholder="athlete@domain.com" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="reg-phone">Phone Number *</label>
+                <input type="tel" id="reg-phone" class="form-input" placeholder="+1 (555) 234-5678" required>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="reg-gender">Gender</label>
+                <select id="reg-gender" class="form-select">
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other / Prefer not to say</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="reg-plan">Membership Plan *</label>
+                <select id="reg-plan" class="form-select" required>
+                  <option value="1">Silver Starter — $49 / mo</option>
+                  <option value="2">Gold Performance — $129 / 3 mos</option>
+                  <option value="3">Platinum Elite — $229 / 6 mos (Best Value)</option>
+                  <option value="4">Apex Black VIP — $399 / 12 mos (VIP)</option>
+                  <option value="5" selected>Student Scholar Pass 🎓 — $89 / 6 mos (50% Off)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Student Scholar Pass Callout -->
+            <div id="student-toggle-card" style="background: rgba(147, 51, 234, 0.1); border: 1px dashed rgba(168, 85, 247, 0.4); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="reg-is-student" checked style="accent-color: #9333ea; width: 17px; height: 17px; cursor: pointer;">
+                  <label for="reg-is-student" style="font-size: 0.84rem; font-weight: 700; color: #d8b4fe; cursor: pointer;">
+                    🎓 Student Scholar Discount (Save 50%)
+                  </label>
+                </div>
+                <span class="badge" style="background: #9333ea; color: #FFF; font-size: 0.65rem;">$89 / 6 MO</span>
+              </div>
+              <div id="student-id-field" style="margin-top: 10px;">
+                <label class="form-label" for="reg-student-id" style="font-size: 0.76rem; color: #c084fc; margin-bottom: 4px;">College / Campus & Student ID</label>
+                <input type="text" id="reg-student-id" class="form-input" placeholder="e.g. Apex Tech Campus / STU-2026-981" style="background: rgba(0,0,0,0.35); border-color: rgba(168, 85, 247, 0.35);">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="reg-password">Password (Min 6 chars) *</label>
+                <div style="position: relative;">
+                  <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required minlength="6">
+                  <button type="button" id="toggle-reg-pw-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer;" aria-label="Toggle password">
+                    <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="reg-confirm-password">Confirm Password *</label>
+                <input type="password" id="reg-confirm-password" class="form-input" placeholder="••••••••" required minlength="6">
+              </div>
+            </div>
+
+            <div style="margin-bottom: 18px; font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 8px;">
+              <input type="checkbox" id="reg-terms" checked required style="accent-color: var(--accent-primary); margin-top: 2px;">
+              <label for="reg-terms" style="cursor: pointer; line-height: 1.4;">
+                I agree to club safety rules, biometric QR turnstile entry, and facility terms.
+              </label>
+            </div>
+
+            <button type="submit" id="reg-submit-btn" class="btn btn-primary btn-lg" style="width: 100%;">
+              Create Account & Enter Portal <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+            </button>
+          </form>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; font-size: 0.88rem; color: var(--text-muted);">
+          Already registered? <a href="javascript:void(0)" onclick="switchAuthTab('signin')" style="color: var(--accent-primary); text-decoration: none; font-weight: 700;">Sign In to Portal</a>
+        </div>
       </div>
     </div>
   </div>
@@ -335,6 +509,40 @@
   <script src="/js/advanced-fx.js"></script>
   <script src="/js/auth.js"></script>
   <script>
+    function switchAuthTab(mode) {
+      const isReg = mode === 'register';
+      const signinBtn = document.getElementById('tab-signin-btn');
+      const regBtn = document.getElementById('tab-register-btn');
+      const signinPanel = document.getElementById('signin-panel');
+      const regPanel = document.getElementById('register-panel');
+      const authTitle = document.getElementById('auth-title');
+      const authSubtitle = document.getElementById('auth-subtitle');
+
+      if (signinBtn && regBtn) {
+        signinBtn.classList.toggle('active', !isReg);
+        signinBtn.setAttribute('aria-selected', !isReg);
+        regBtn.classList.toggle('active', isReg);
+        regBtn.setAttribute('aria-selected', isReg);
+      }
+
+      if (signinPanel && regPanel) {
+        signinPanel.classList.toggle('active', !isReg);
+        regPanel.classList.toggle('active', isReg);
+      }
+
+      if (authTitle && authSubtitle) {
+        if (isReg) {
+          authTitle.textContent = 'Join Apex Fitness';
+          authSubtitle.textContent = 'Create your membership or student discount account';
+        } else {
+          authTitle.textContent = 'Welcome Back';
+          authSubtitle.textContent = 'Sign in to your Apex Fitness Club account';
+        }
+      }
+
+      UI.refreshIcons();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       UI.refreshIcons();
 
@@ -348,50 +556,175 @@
         }
       }
 
-      // Password toggle
+      // Check URL parameters for tab or plan selection
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      const planParam = urlParams.get('plan');
+      if (tabParam === 'register' || tabParam === 'signup' || urlParams.get('register') === 'true' || planParam) {
+        switchAuthTab('register');
+        if (planParam) {
+          const planSelect = document.getElementById('reg-plan');
+          if (planSelect) planSelect.value = planParam;
+        }
+      }
+
+      // Login Password toggle
       const pwInput = document.getElementById('login-password');
       const toggleBtn = document.getElementById('toggle-pw-btn');
-      toggleBtn.addEventListener('click', () => {
-        const isPw = pwInput.type === 'password';
-        pwInput.type = isPw ? 'text' : 'password';
-        toggleBtn.innerHTML = isPw ? '<i data-lucide="eye-off" style="width: 18px; height: 18px;"></i>' : '<i data-lucide="eye" style="width: 18px; height: 18px;"></i>';
-        UI.refreshIcons();
-      });
+      if (toggleBtn && pwInput) {
+        toggleBtn.addEventListener('click', () => {
+          const isPw = pwInput.type === 'password';
+          pwInput.type = isPw ? 'text' : 'password';
+          toggleBtn.innerHTML = isPw ? '<i data-lucide="eye-off" style="width: 18px; height: 18px;"></i>' : '<i data-lucide="eye" style="width: 18px; height: 18px;"></i>';
+          UI.refreshIcons();
+        });
+      }
+
+      // Register Password toggle
+      const regPwInput = document.getElementById('reg-password');
+      const toggleRegPwBtn = document.getElementById('toggle-reg-pw-btn');
+      if (toggleRegPwBtn && regPwInput) {
+        toggleRegPwBtn.addEventListener('click', () => {
+          const isPw = regPwInput.type === 'password';
+          regPwInput.type = isPw ? 'text' : 'password';
+          toggleRegPwBtn.innerHTML = isPw ? '<i data-lucide="eye-off" style="width: 16px; height: 16px;"></i>' : '<i data-lucide="eye" style="width: 16px; height: 16px;"></i>';
+          UI.refreshIcons();
+        });
+      }
+
+      // Student discount toggle sync
+      const studentCb = document.getElementById('reg-is-student');
+      const studentField = document.getElementById('student-id-field');
+      const planSelect = document.getElementById('reg-plan');
+      if (studentCb) {
+        studentCb.addEventListener('change', () => {
+          if (studentCb.checked) {
+            if (studentField) studentField.style.display = 'block';
+            if (planSelect) planSelect.value = '5'; // Student Scholar Pass
+          } else {
+            if (studentField) studentField.style.display = 'none';
+            if (planSelect && planSelect.value === '5') planSelect.value = '2'; // Gold
+          }
+        });
+      }
+
+      if (planSelect) {
+        planSelect.addEventListener('change', () => {
+          if (planSelect.value === '5' && studentCb && !studentCb.checked) {
+            studentCb.checked = true;
+            if (studentField) studentField.style.display = 'block';
+          }
+        });
+      }
 
       // Login Form Submission
       const form = document.getElementById('login-form');
       const submitBtn = document.getElementById('submit-btn');
 
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value.trim();
-        const password = pwInput.value;
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('login-email').value.trim();
+          const password = pwInput.value;
 
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Authenticating...';
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = 'Authenticating...';
 
-        const result = await Auth.login(email, password);
+          const result = await Auth.login(email, password);
 
-        if (result.success) {
-          UI.showToast('Login authorized. Redirecting...', 'success', 'Welcome');
-          setTimeout(() => {
-            const role = result.user.role;
-            if (role === 'member') {
-              window.location.href = '/member';
+          if (result.success) {
+            if (window.SoundFX && typeof SoundFX.success === 'function') SoundFX.success();
+            UI.showToast('Login authorized. Redirecting...', 'success', 'Welcome');
+            setTimeout(() => {
+              const role = result.user.role;
+              if (role === 'member') {
+                window.location.href = '/member';
+              } else {
+                window.location.href = '/admin';
+              }
+            }, 500);
+          } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Sign In to Apex <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>';
+            UI.refreshIcons();
+            UI.showToast(result.message || 'Authentication failed', 'error');
+          }
+        });
+      }
+
+      // Register Form Submission
+      const regForm = document.getElementById('register-form');
+      const regSubmitBtn = document.getElementById('reg-submit-btn');
+
+      if (regForm) {
+        regForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const fullName = document.getElementById('reg-name').value.trim();
+          const email = document.getElementById('reg-email').value.trim();
+          const phone = document.getElementById('reg-phone').value.trim();
+          const gender = document.getElementById('reg-gender').value;
+          const planId = parseInt(document.getElementById('reg-plan').value);
+          const isStudent = studentCb ? studentCb.checked : false;
+          const studentId = document.getElementById('reg-student-id').value.trim();
+          const password = regPwInput.value;
+          const confirmPw = document.getElementById('reg-confirm-password').value;
+
+          if (password !== confirmPw) {
+            UI.showToast('Passwords do not match. Please verify both password fields.', 'error');
+            return;
+          }
+
+          if (password.length < 6) {
+            UI.showToast('Password must be at least 6 characters long.', 'error');
+            return;
+          }
+
+          regSubmitBtn.disabled = true;
+          regSubmitBtn.innerHTML = `
+            <span style="display:inline-block; width:16px; height:16px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite; vertical-align:middle; margin-right:8px;"></span>
+            Creating Membership & Pass...
+          `;
+
+          try {
+            const regPayload = {
+              full_name: fullName,
+              email: email,
+              phone: phone,
+              gender: gender,
+              plan_id: planId,
+              is_student: isStudent,
+              student_id: studentId,
+              password: password
+            };
+
+            const result = await Auth.register(regPayload);
+
+            if (result.success) {
+              if (window.SoundFX && typeof SoundFX.success === 'function') SoundFX.success();
+              const code = result.member_code || 'APX-MEMBER';
+              UI.showToast(`Membership created! Code: ${code}. Redirecting to your portal...`, 'success', 'Welcome to Apex Fitness');
+              setTimeout(() => {
+                window.location.href = '/member';
+              }, 600);
             } else {
-              window.location.href = '/admin';
+              regSubmitBtn.disabled = false;
+              regSubmitBtn.innerHTML = 'Create Account & Enter Portal <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>';
+              UI.refreshIcons();
+              UI.showToast(result.message || 'Registration failed. Please check your details.', 'error');
             }
-          }, 600);
-        } else {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = 'Sign In to Apex <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>';
-          UI.refreshIcons();
-          UI.showToast(result.message || 'Authentication failed', 'error');
-        }
-      });
+          } catch (err) {
+            regSubmitBtn.disabled = false;
+            regSubmitBtn.innerHTML = 'Create Account & Enter Portal <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>';
+            UI.refreshIcons();
+            UI.showToast('Registration error: ' + (err.message || 'Network error'), 'error');
+          }
+        });
+      }
     });
 
     function fillCredentials(email, password, role) {
+      switchAuthTab('signin');
       document.getElementById('login-email').value = email;
       document.getElementById('login-password').value = password;
       UI.showToast(`Pre-filled ${role.toUpperCase()} credentials: ${email}`, 'info');

@@ -1,8 +1,11 @@
+import datetime
 from flask import Blueprint, request
 from werkzeug.security import check_password_hash, generate_password_hash
 from backend.database import query_db
 from backend.utils.auth_middleware import generate_jwt_token, token_required, get_role_permissions
-from backend.utils.helpers import success_response, error_response
+from backend.utils.helpers import (
+    success_response, error_response, generate_member_code, generate_invoice_no
+)
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -66,6 +69,136 @@ def login():
     return success_response(
         data={'token': token, 'user': user_info},
         message='Login successful'
+    )
+
+@auth_bp.route('/register', methods=['POST'])
+def register():
+    """Register a new member account publicly, create member record, assign plan, and return JWT token."""
+    data = request.get_json(silent=True) or {}
+    full_name = data.get('full_name', '').strip()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    phone = data.get('phone', '').strip()
+    gender = data.get('gender', 'male')
+    plan_id = data.get('plan_id')
+    is_student = bool(data.get('is_student', False))
+    student_id = data.get('student_id', '').strip()
+    emergency_contact = data.get('emergency_contact', '').strip()
+
+    if not full_name:
+        return error_response('Full name is required', status_code=400)
+    if not email:
+        return error_response('Email address is required', status_code=400)
+    if '@' not in email or '.' not in email:
+        return error_response('A valid email address is required', status_code=400)
+    if not password:
+        return error_response('Password is required', status_code=400)
+    if len(password) < 6:
+        return error_response('Password must be at least 6 characters', status_code=400)
+    if not phone:
+        phone = '+1 (555) 000-0000'
+
+    # Check if email is already taken
+    existing = query_db("SELECT id FROM users WHERE email = %s", (email,), one=True)
+    if existing:
+        return error_response('An account with this email already exists. Please sign in instead.', status_code=400)
+
+    # If student is checked and no plan_id passed, default to Student Scholar Pass
+    if is_student and not plan_id:
+        student_plan = query_db("SELECT id FROM membership_plans WHERE code = 'PLAN-STUDENT' OR name LIKE '%Student%'", one=True)
+        if student_plan:
+            plan_id = student_plan['id']
+
+    # Default plan to first active plan if not provided
+    if not plan_id:
+        default_plan = query_db("SELECT id FROM membership_plans WHERE is_active = TRUE ORDER BY id ASC LIMIT 1", one=True)
+        if default_plan:
+            plan_id = default_plan['id']
+
+    # 1. Create User
+    password_hash = generate_password_hash(password)
+    user_res = query_db(
+        "INSERT INTO users (email, password_hash, role, status) VALUES (%s, %s, 'member', 'active')",
+        (email, password_hash),
+        commit=True
+    )
+    user_id = user_res['lastrowid']
+
+    # 2. Create Member
+    member_code = generate_member_code()
+    today = datetime.date.today()
+    photo_url = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80'
+    member_res = query_db("""
+        INSERT INTO members
+        (user_id, member_code, full_name, email, phone, gender, emergency_contact, photo_url, joining_date, status)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'active')
+    """, (user_id, member_code, full_name, email, phone, gender, emergency_contact or student_id, photo_url, today), commit=True)
+    member_id = member_res['lastrowid']
+
+    # 3. Create Membership & Payment record if plan is chosen
+    plan = None
+    if plan_id:
+        plan = query_db("SELECT * FROM membership_plans WHERE id = %s", (plan_id,), one=True)
+        if plan:
+            duration_months = int(plan['duration_months'])
+            end_date = today + datetime.timedelta(days=30 * duration_months)
+            ms_res = query_db("""
+                INSERT INTO memberships (member_id, plan_id, start_date, end_date, price_paid, status, auto_renew)
+                VALUES (%s, %s, %s, %s, %s, 'active', FALSE)
+            """, (member_id, plan['id'], today, end_date, plan['price']), commit=True)
+            membership_id = ms_res['lastrowid']
+
+            # Record payment
+            invoice_no = generate_invoice_no()
+            txn_note = f"Self-Registration: {plan['name']}"
+            if is_student and student_id:
+                txn_note += f" (Student ID: {student_id})"
+            query_db("""
+                INSERT INTO payments 
+                (member_id, membership_id, invoice_no, amount, payment_date, payment_method, transaction_id, status, notes)
+                VALUES (%s, %s, %s, %s, %s, 'card', %s, 'paid', %s)
+            """, (member_id, membership_id, invoice_no, plan['price'], today, f"TXN_{member_code}_{invoice_no[-4:]}", txn_note), commit=True)
+
+    # 4. Create welcome notification
+    welcome_msg = f'Welcome to APEX Fitness, {full_name}! Your membership code is {member_code}. You can now check in via turnstile and access workout plans.'
+    query_db("""
+        INSERT INTO notifications (user_id, title, message, type)
+        VALUES (%s, 'Welcome to APEX Fitness Club', %s, 'success')
+    """, (user_id, welcome_msg), commit=True)
+
+    # 5. Fetch user info & generate token for instant auto-login
+    user_row = query_db("SELECT id, email, role, status FROM users WHERE id = %s", (user_id,), one=True)
+    profile = query_db("""
+        SELECT m.*, p.name as plan_name, ms.status as membership_status, ms.end_date as plan_expiry
+        FROM members m
+        LEFT JOIN memberships ms ON m.id = ms.member_id AND ms.status = 'active'
+        LEFT JOIN membership_plans p ON ms.plan_id = p.id
+        WHERE m.user_id = %s
+        ORDER BY ms.id DESC LIMIT 1
+    """, (user_id,), one=True)
+
+    token = generate_jwt_token(user_row)
+    permissions = get_role_permissions('member')
+
+    user_info = {
+        'id': user_row['id'],
+        'email': user_row['email'],
+        'role': 'member',
+        'status': 'active',
+        'profile': profile,
+        'permissions': permissions
+    }
+
+    return success_response(
+        data={
+            'token': token,
+            'user': user_info,
+            'member_id': member_id,
+            'member_code': member_code,
+            'plan_name': plan['name'] if plan else 'Standard'
+        },
+        message=f'Registration successful! Welcome to Apex Fitness, {full_name}.',
+        status_code=201
     )
 
 @auth_bp.route('/me', methods=['GET'])
