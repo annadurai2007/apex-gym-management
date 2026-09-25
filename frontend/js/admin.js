@@ -20,6 +20,21 @@ const AdminState = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Check if session handoff exists in URL (e.g. from 127.0.0.1 <-> localhost)
+  const urlParams = new URLSearchParams(window.location.search);
+  const handoff = urlParams.get('auth_handoff');
+  if (handoff) {
+    try {
+      const data = JSON.parse(decodeURIComponent(handoff));
+      if (data && data.token && data.user) {
+        Auth.setSession(data.token, data.user);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    } catch (e) {
+      console.warn('Failed parsing auth handoff:', e);
+    }
+  }
+
   // Enforce Admin/Staff/Trainer authorization
   if (!Auth.requireAuth(['admin', 'staff', 'trainer'])) return;
 
@@ -2661,11 +2676,11 @@ function interpretCameraError(err) {
   if (errLower.includes('notallowed') || errLower.includes('permission denied')) {
     return {
       type: 'permission_denied',
-      title: 'Camera Blocked in Chrome',
+      title: 'Camera Permission Blocked',
       badge: '🔒 Camera Blocked in Chrome',
-      message: 'Chrome blocked camera access for http://127.0.0.1:5000.',
-      action: 'Click the 🔒 icon in the address bar (left of 127.0.0.1:5000) → Turn Camera to "Allow" → Refresh page.',
-      tamil: 'Chrome முகவரிப் பட்டியில் உள்ள 🔒 ஐகானை கிளிக் செய்து Camera-வை "Allow" செய்யவும், பிறகு Refresh செய்யவும்.'
+      message: 'Chrome blocked camera permission for this site.',
+      action: 'Click the ⓘ or 🔒 icon next to URL in Chrome address bar → Site settings → Set Camera to "Allow" → Refresh page.',
+      tamil: 'Chrome முகவரிப் பட்டியில் உள்ள ⓘ அல்லது 🔒 ஐகானை கிளிக் செய்து Site settings-ல் Camera-வை "Allow" செய்யவும், பிறகு Refresh செய்யவும்.'
     };
   }
   if (errLower.includes('notreadable') || errLower.includes('could not start video source') || errLower.includes('trackstarterror') || errLower.includes('in use') || errLower.includes('device is in use')) {
@@ -2681,17 +2696,17 @@ function interpretCameraError(err) {
   if (errLower.includes('notfound') || errLower.includes('devicesnotfound') || errLower.includes('no camera') || errLower.includes('requested device not found')) {
     return {
       type: 'not_found',
-      title: 'No Webcam Detected',
-      badge: '📷 Hardware Not Found',
-      message: 'No physical camera hardware was detected on this laptop.',
-      action: 'Check your laptop camera privacy slider switch or keyboard Fn key (Fn+F10 / Fn+F6). Or use 1-Click Simulator below.',
-      tamil: 'லேப்டாப்பில் கேமரா ஸ்லைடர் சுவிட்ச் அல்லது Fn key ஆன் செய்யப்பட்டுள்ளதா என பார்க்கவும்.'
+      title: 'Webcam Permission / Origin Setup Needed',
+      badge: '📷 Camera Needs Permission or Localhost',
+      message: 'Chrome requires camera permission or secure localhost origin to access USB Camera.',
+      action: 'Click ⓘ icon in address bar → Site Settings → Camera: Allow. Or click [Switch to localhost:5000] below.',
+      tamil: 'Chrome முகவரிப் பட்டியில் ⓘ கிளிக் செய்து Site settings-ல் Camera-வை "Allow" செய்யவும், அல்லது கீழே உள்ள [Switch to localhost] பட்டனை அழுத்தவும்.'
     };
   }
   return {
     type: 'unknown',
-    title: 'Camera Standby / Blocked',
-    badge: '📷 Camera Unavailable',
+    title: 'Camera Standby / Notice',
+    badge: '📷 Camera Standby',
     message: errStr || 'Could not initialize optical webcam feed.',
     action: 'Click "Allow" on Chrome camera prompt, close duplicate tabs, or use 1-Click Simulation below.',
     tamil: 'Chrome-ல் Allow கொடுக்கவும் அல்லது கீழே உள்ள 1-Click Test பட்டனை பயன்படுத்தவும்.'
@@ -2700,6 +2715,21 @@ function interpretCameraError(err) {
 
 function showCameraTroubleshootToast(info) {
   UI.showToast(`${info.action}`, 'warning', info.title);
+}
+
+/**
+ * Seamlessly handoff active auth session to localhost:5000 or 127.0.0.1:5000
+ */
+function switchToLocalhost() {
+  const token = Auth.getToken();
+  const user = Auth.getUser();
+  const targetHost = window.location.hostname === '127.0.0.1' ? 'localhost' : '127.0.0.1';
+  let targetUrl = `${window.location.protocol}//${targetHost}:${window.location.port || 5000}${window.location.pathname}`;
+  if (token && user) {
+    const sessionData = encodeURIComponent(JSON.stringify({ token, user }));
+    targetUrl += `?auth_handoff=${sessionData}`;
+  }
+  window.location.href = targetUrl;
 }
 
 /**
@@ -2723,36 +2753,17 @@ async function startHtml5Camera(scannerInstance, onScanSuccess) {
 
   let lastError = null;
 
-  // Step 1: Probe direct getUserMedia to verify permissions & awaken hardware
-  if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-    let probeStream = null;
-    try {
-      probeStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    } catch (probeErr) {
-      console.warn('[Camera] Direct getUserMedia probe error:', probeErr);
-      return { success: false, error: probeErr };
-    } finally {
-      if (probeStream) {
-        probeStream.getTracks().forEach(track => {
-          try { track.stop(); } catch (e) {}
-        });
-      }
-    }
-    // Brief 80ms yield for OS camera driver to release device handle
-    await new Promise(r => setTimeout(r, 80));
-  }
-
-  // Step 2: Enumerate hardware devices
+  // Step 1: Query available video hardware devices via Html5Qrcode directly
   let cameraDevices = [];
   try {
     cameraDevices = await Html5Qrcode.getCameras();
-    console.log('[Camera] Available devices:', cameraDevices);
+    console.log('[Camera] Detected camera devices:', cameraDevices);
   } catch (enumErr) {
     console.warn('[Camera] getCameras enumeration error:', enumErr);
     lastError = enumErr;
   }
 
-  // Step 3: Try all enumerated hardware devices
+  // Step 2: Try all enumerated hardware devices by their deviceId
   if (cameraDevices && cameraDevices.length > 0) {
     for (const dev of cameraDevices) {
       try {
@@ -2771,11 +2782,26 @@ async function startHtml5Camera(scannerInstance, onScanSuccess) {
     }
   }
 
-  // Step 4: Fallback constraint - facingMode: ideal 'environment'
+  // Step 3: Fallback constraint - facingMode 'user'
   try {
-    console.log('[Camera] Fallback: facingMode ideal environment');
+    console.log('[Camera] Fallback: facingMode user');
     await scannerInstance.start(
-      { facingMode: { ideal: 'environment' } },
+      { facingMode: 'user' },
+      config,
+      onScanSuccess,
+      () => {}
+    );
+    return { success: true, mode: 'user' };
+  } catch (userErr) {
+    console.warn('[Camera] Fallback user failed:', userErr);
+    lastError = userErr;
+  }
+
+  // Step 4: Fallback constraint - facingMode 'environment'
+  try {
+    console.log('[Camera] Fallback: facingMode environment');
+    await scannerInstance.start(
+      { facingMode: 'environment' },
       config,
       onScanSuccess,
       () => {}
@@ -2786,19 +2812,19 @@ async function startHtml5Camera(scannerInstance, onScanSuccess) {
     lastError = envErr;
   }
 
-  // Step 5: Fallback constraint - facingMode: ideal 'user'
+  // Step 5: Fallback constraint - facingMode: ideal 'environment'
   try {
-    console.log('[Camera] Fallback: facingMode ideal user');
+    console.log('[Camera] Fallback: facingMode ideal environment');
     await scannerInstance.start(
-      { facingMode: { ideal: 'user' } },
+      { facingMode: { ideal: 'environment' } },
       config,
       onScanSuccess,
       () => {}
     );
-    return { success: true, mode: 'user' };
-  } catch (userErr) {
-    console.warn('[Camera] Fallback user failed:', userErr);
-    lastError = userErr;
+    return { success: true, mode: 'ideal-environment' };
+  } catch (idealErr) {
+    console.warn('[Camera] Fallback ideal environment failed:', idealErr);
+    lastError = idealErr;
   }
 
   // Step 6: Final unconstrained fallback
@@ -2915,7 +2941,7 @@ function renderScannerFallback(type, errInfo) {
             </button>
           </div>
         </div>
-        <div style="display: flex; justify-content: center; gap: 6px;">
+        <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;">
           <label class="btn btn-sm btn-outline" style="cursor: pointer; font-size: 0.7rem; padding: 3px 8px;">
             <i data-lucide="image" style="width: 12px; height: 12px;"></i> Upload QR
             <input type="file" accept="image/*" style="display: none;" onchange="handleQrFileUpload(event, 'trainer')">
@@ -2927,6 +2953,13 @@ function renderScannerFallback(type, errInfo) {
             <i data-lucide="help-circle" style="width: 12px; height: 12px;"></i> Help
           </button>
         </div>
+        ${window.location.hostname === '127.0.0.1' ? `
+          <div style="margin-top: 6px;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="switchToLocalhost()" style="font-size: 0.68rem; padding: 3px 8px; color: #10B981; border-color: rgba(16,185,129,0.3); width: 100%; justify-content: center;">
+              <i data-lucide="globe" style="width: 11px; height: 11px;"></i> Switch to localhost:5000 (Camera Allowed)
+            </button>
+          </div>
+        ` : ''}
       </div>
     `;
   } else {
@@ -2953,7 +2986,7 @@ function renderScannerFallback(type, errInfo) {
             </button>
           </div>
         </div>
-        <div style="display: flex; justify-content: center; gap: 6px;">
+        <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;">
           <label class="btn btn-sm btn-outline" style="cursor: pointer; font-size: 0.7rem; padding: 3px 8px;">
             <i data-lucide="image" style="width: 12px; height: 12px;"></i> Upload QR
             <input type="file" accept="image/*" style="display: none;" onchange="handleQrFileUpload(event, 'member')">
@@ -2965,6 +2998,13 @@ function renderScannerFallback(type, errInfo) {
             <i data-lucide="help-circle" style="width: 12px; height: 12px;"></i> Help
           </button>
         </div>
+        ${window.location.hostname === '127.0.0.1' ? `
+          <div style="margin-top: 6px;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="switchToLocalhost()" style="font-size: 0.68rem; padding: 3px 8px; color: #10B981; border-color: rgba(16,185,129,0.3); width: 100%; justify-content: center;">
+              <i data-lucide="globe" style="width: 11px; height: 11px;"></i> Switch to localhost:5000 (Camera Allowed)
+            </button>
+          </div>
+        ` : ''}
       </div>
     `;
   }
@@ -3168,6 +3208,13 @@ async function runCameraHardwareDiagnostic() {
       <div style="font-size:0.74rem; color:#94A3B8; margin-top:4px; font-style:italic;">
         👉 <strong>தமிழ்:</strong> ${interpreted.tamil}
       </div>
+      ${window.location.hostname === '127.0.0.1' ? `
+        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-subtle);">
+          <button type="button" class="btn btn-sm btn-primary" onclick="switchToLocalhost()" style="font-size: 0.76rem; padding: 5px 12px; gap: 6px;">
+            <i data-lucide="globe" style="width: 13px; height: 13px;"></i> Switch to http://localhost:5000 (Camera Allowed)
+          </button>
+        </div>
+      ` : ''}
     `;
     UI.refreshIcons();
   }

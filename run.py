@@ -26,11 +26,11 @@ def print_banner():
 ========================================================================
    PREMIUM GYM MANAGEMENT SYSTEM — PRODUCTION ARCHITECTURE
 ------------------------------------------------------------------------
-   API Server:       http://127.0.0.1:{Config.FLASK_PORT}
-   Landing Page:     http://127.0.0.1:{Config.FLASK_PORT}/
-   Login Portal:     http://127.0.0.1:{Config.FLASK_PORT}/login
-   Admin Dashboard:  http://127.0.0.1:{Config.FLASK_PORT}/admin
-   Member Portal:    http://127.0.0.1:{Config.FLASK_PORT}/member
+   API Server:       http://localhost:{Config.FLASK_PORT}
+   Landing Page:     http://localhost:{Config.FLASK_PORT}/
+   Login Portal:     http://localhost:{Config.FLASK_PORT}/login
+   Admin Dashboard:  http://localhost:{Config.FLASK_PORT}/admin
+   Member Portal:    http://localhost:{Config.FLASK_PORT}/member
 ------------------------------------------------------------------------
    DEMO CREDENTIALS (1-CLICK LOGIN AVAILABLE ON LOGIN PAGE):
    * Admin:   admin@apexgym.com   / Admin@123
@@ -45,7 +45,7 @@ def print_banner():
 def auto_open_browser(port):
     """Automatically launches Google Chrome or default web browser directly to login page."""
     time.sleep(1.2)
-    url = f"http://127.0.0.1:{port}/login"
+    url = f"http://localhost:{port}/login"
     print(f"\n========================================================")
     print(f" [🌐] Automatically launching Google Chrome at:")
     print(f"      {url}")
