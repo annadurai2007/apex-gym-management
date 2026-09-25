@@ -1720,24 +1720,43 @@
 }
 
 .compact-attendance-table .notes-cell {
-  max-width: 110px;
+  max-width: 90px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-secondary);
 }
 
-.compact-attendance-table .action-cell {
+.compact-attendance-table .action-cell,
+.compact-attendance-table th.col-actions {
   text-align: right;
   white-space: nowrap;
-  width: 1%;
+  position: sticky;
+  right: 0;
+  background: var(--bg-card);
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+  padding-left: 10px !important;
 }
 
-.compact-attendance-table .action-cell .btn {
+.compact-attendance-table th.col-actions {
+  background: #141816;
+  z-index: 3;
+}
+
+.compact-attendance-table .action-cell .btn,
+.compact-attendance-table .action-cell .btn-rollcall-action {
   padding: 4px 8px !important;
-  font-size: 0.76rem !important;
+  font-size: 0.74rem !important;
   white-space: nowrap;
+}
+
+@media (max-width: 1260px) {
+  .compact-attendance-table .col-notes,
+  .compact-attendance-table .notes-cell {
+    display: none !important;
+  }
 }
 
 /* ==========================================================================
