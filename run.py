@@ -11,6 +11,40 @@ from pathlib import Path
 root_dir = Path(__file__).resolve().parent
 sys.path.insert(0, str(root_dir))
 
+def ensure_dependencies():
+    """Ensure all required dependencies are installed before importing backend."""
+    required = {
+        'flask': 'Flask',
+        'flask_cors': 'flask-cors',
+        'pymysql': 'PyMySQL',
+        'cryptography': 'cryptography',
+        'jwt': 'PyJWT',
+        'dotenv': 'python-dotenv',
+        'werkzeug': 'Werkzeug'
+    }
+    missing = []
+    for mod, pkg in required.items():
+        try:
+            __import__(mod)
+        except ImportError:
+            missing.append(pkg)
+    
+    if missing:
+        print("\n========================================================")
+        print(" [*] First-time setup detected on this computer!")
+        print(f" [*] Installing required packages ({len(missing)}): {', '.join(missing)}")
+        print(" [*] Please wait a few seconds...")
+        print("========================================================\n")
+        req_file = root_dir / 'requirements.txt'
+        try:
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', str(req_file)])
+            print("\n[+] All packages installed successfully! Starting system...\n")
+        except Exception as e:
+            print(f"\n[!] Automatic package installation failed: {e}")
+            print(f"    Please run: py -m pip install -r requirements.txt\n")
+
+ensure_dependencies()
+
 from backend.config import Config
 from backend.database import init_database, check_database_connection, _detect_engine
 from backend.app import create_app
